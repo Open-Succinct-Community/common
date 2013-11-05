@@ -185,7 +185,11 @@ public class DateUtils { // NOPMD by VMahadevan on 1/26/09 11:16 PM
         	return ISO_DATE_FORMAT.parse(dateStr);
         }catch (ParseException e){
         }
-
+        try {
+        	long time = Long.parseLong(dateStr);
+        	return new Date(time);
+        }catch (NumberFormatException ex){
+        }
         throw new RuntimeException("Unknown Date Format");
     }
 
