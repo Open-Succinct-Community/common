@@ -20,6 +20,7 @@ public class DexIntrospector extends PackageIntrospector {
 		try {
 			Object oDexFile = Class.forName("dalvik.system.DexFile").getConstructor(File.class).newInstance(dexFile);
 			Method entries = oDexFile.getClass().getMethod("entries");
+			@SuppressWarnings("unchecked")
 			Enumeration<String> sEntries = (Enumeration<String>) entries.invoke(oDexFile);
 			while(sEntries.hasMoreElements()){
 				String className = sEntries.nextElement();
@@ -28,7 +29,7 @@ public class DexIntrospector extends PackageIntrospector {
 				}
 			}
 		} catch (Exception ex){
-			Logger.getGlobal().info("Could not parse dex file: " + dexFile.toString() + " due to exception :" + ex.getMessage());
+			Logger.getLogger(getClass().getName()).info("Could not parse dex file: " + dexFile.toString() + " due to exception :" + ex.getMessage());
 		}
 		return classes;
 	}

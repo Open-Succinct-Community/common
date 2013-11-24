@@ -10,6 +10,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -106,17 +107,33 @@ public class ObjectUtil {
 			return v;
 		} 
     }
+    
+    private static boolean isMutable(Object o){
+    	if (o == null){
+    		return false;
+    	}
+    	if (o instanceof String || o instanceof Byte || o instanceof Double  ||  o instanceof Float || 
+    			o instanceof Integer || o instanceof Long || o instanceof Short || o instanceof Boolean || o instanceof Character){
+    		return false; 
+    	}
+    	return true;
+    }
     @SuppressWarnings("unchecked")
 	public static <V> V clone(V v){
     	V ret = v;
-    	if (v != null) {
+		if (!isMutable(v)) {
+			ret = v ; //Shallow is enough for immutables (null inclusive)
+		}else if (v instanceof Date){ 
+			ret = (V)reflectiveClone((Cloneable)v); //Reflective clone is cheaper for Date.
+		}else {
+			//Generic cloning capability.
     		if (v instanceof Serializable){
         		ret = (V)deepClone((Serializable)v);
     		}
         	if ((ret == v) && (v instanceof Cloneable)){
         		ret = (V)reflectiveClone((Cloneable)v);
         	}
-    	}
+		}
 		return ret;
 	}
     public static <K,V> void cloneValues(Map<K,V> inMap){

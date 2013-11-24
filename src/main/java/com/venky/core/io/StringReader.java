@@ -6,10 +6,15 @@ import com.venky.core.string.StringUtil;
 
 public class StringReader extends java.io.StringReader{
 
+	private int length = 0;  
 	public StringReader(String s) {
 		super(s);
+		length = s.length();
 	}
 
+	public int length(){
+		return length;
+	}
 	@Override
 	public boolean markSupported() {
 		return false;

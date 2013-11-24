@@ -2,7 +2,6 @@ package com.venky.core.io;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Arrays;
 
 
 public class SeekableByteArrayOutputStream extends OutputStream{
@@ -34,9 +33,17 @@ public class SeekableByteArrayOutputStream extends OutputStream{
 				throw new OutOfMemoryError();
 			}
 		}
-        buf = Arrays.copyOf(buf, newSize);
+		
+        buf = copyOf(buf, newSize);
 	}
-	
+	/** Copied from Arrays in 1.7 */ 
+    public static byte[] copyOf(byte[] original, int newLength) {
+        byte[] copy = new byte[newLength];
+        System.arraycopy(original, 0, copy, 0,
+                         Math.min(original.length, newLength));
+        return copy;
+    }
+
 	public void seek(long pos) {
 		this.pos = (int)pos;
 	}
@@ -49,7 +56,7 @@ public class SeekableByteArrayOutputStream extends OutputStream{
 	}
 
 	public byte[] toByteArray() {
-		return Arrays.copyOf(buf, length);
+		return copyOf(buf, length);
 	}
 
 	public long size() {
