@@ -85,10 +85,10 @@ public class DateUtils { // NOPMD by VMahadevan on 1/26/09 11:16 PM
     public static final DateFormat ISO_DATE_TIME_FORMAT = new SimpleDateFormat(ISO_DATE_TIME_FORMAT_STR,Locale.getDefault());
 
     
-    public static final String APP_TIME_FORMAT_STR = "HH:mm:ss";
+    public static final String APP_TIME_FORMAT_STR = "HH:mm";
     public static final DateFormat APP_TIME_FORMAT = new SimpleDateFormat(APP_TIME_FORMAT_STR, Locale.getDefault());
     
-    public static final String APP_TIME_FORMAT_WITH_TZ_STR = "HH:mm:ss Z";
+    public static final String APP_TIME_FORMAT_WITH_TZ_STR = "HH:mm Z";
     public static final DateFormat APP_TIME_FORMAT_WITH_TZ = new SimpleDateFormat(APP_TIME_FORMAT_WITH_TZ_STR, Locale.getDefault());
     
     public static final String APP_DATE_TIME_FORMAT_STR = "dd/MM/yyyy HH:mm:ss";
