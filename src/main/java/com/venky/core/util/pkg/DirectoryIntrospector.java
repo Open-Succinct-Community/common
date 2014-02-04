@@ -23,7 +23,7 @@ public class DirectoryIntrospector extends PackageIntrospector{
                     f.getPath().substring(root.getPath().length()+1) : "";
             if (f.isDirectory()){
                 sFiles.addAll(Arrays.asList(f.listFiles()));
-            }else if (pathRelativeToRoot.startsWith(path)){
+            }else if (pathRelativeToRoot.startsWith(path) || pathRelativeToRoot.startsWith(path.replace('/', File.separatorChar))){
                 addClassName(classes, pathRelativeToRoot);
             }
         }

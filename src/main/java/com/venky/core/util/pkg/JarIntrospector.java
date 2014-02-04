@@ -21,7 +21,7 @@ public class JarIntrospector extends PackageIntrospector{
 	        List<PackageIntrospector> children = new ArrayList<PackageIntrospector>();
 	        while (jes.hasMoreElements()){
 	            JarEntry je = jes.nextElement();
-	            if (je.getName().startsWith(path)){
+	            if (je.getName().startsWith(path) || je.getName().startsWith(path.replace('/', File.separatorChar))){
 	                addClassName(classes, je.getName());
 	            }else if (je.getName().endsWith(".dex")) {
 	            	children.add(new DexIntrospector(pkgFile));
