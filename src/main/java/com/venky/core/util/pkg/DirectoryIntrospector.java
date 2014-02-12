@@ -21,9 +21,12 @@ public class DirectoryIntrospector extends PackageIntrospector{
             File f = sFiles.pop();
             String pathRelativeToRoot = f.getPath().length() > root.getPath().length() ? 
                     f.getPath().substring(root.getPath().length()+1) : "";
+            
+            pathRelativeToRoot = File.separatorChar != '/' ? pathRelativeToRoot.replace(File.separatorChar, '/') : pathRelativeToRoot ;
+            
             if (f.isDirectory()){
                 sFiles.addAll(Arrays.asList(f.listFiles()));
-            }else if (pathRelativeToRoot.startsWith(path) || pathRelativeToRoot.startsWith(path.replace('/', File.separatorChar))){
+            }else if (pathRelativeToRoot.startsWith(path)){
                 addClassName(classes, pathRelativeToRoot);
             }
         }
