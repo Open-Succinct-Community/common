@@ -22,7 +22,7 @@ public class DirectoryIntrospector extends PackageIntrospector{
             String pathRelativeToRoot = f.getPath().length() > root.getPath().length() ? 
                     f.getPath().substring(root.getPath().length()+1) : "";
             
-            pathRelativeToRoot = File.separatorChar != '/' ? pathRelativeToRoot.replace(File.separatorChar, '/') : pathRelativeToRoot ;
+            pathRelativeToRoot = ((File.separatorChar != '/') ? pathRelativeToRoot.replace(File.separatorChar, '/') : pathRelativeToRoot) ;
             
             if (f.isDirectory()){
                 sFiles.addAll(Arrays.asList(f.listFiles()));

@@ -21,7 +21,7 @@ public class JarIntrospector extends PackageIntrospector{
 	        List<PackageIntrospector> children = new ArrayList<PackageIntrospector>();
 	        while (jes.hasMoreElements()){
 	            JarEntry je = jes.nextElement();
-	            String jeName = File.separatorChar != '/' ? je.getName().replace(File.separatorChar, '/') : je.getName() ;
+	            String jeName = (File.separatorChar != '/') ? je.getName().replace(File.separatorChar, '/') : je.getName() ;
 	            
 	            if (jeName.startsWith(path)){
 	                addClassName(classes, jeName);
