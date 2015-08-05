@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 
 import com.venky.core.util.ObjectUtil;
 
@@ -286,4 +288,9 @@ public class SequenceSet<E> implements Set<E> , Cloneable, List<E>{
 	public List<E> subList(int fromIndex, int toIndex) {
 		return list().subList(fromIndex, toIndex);
 	}
+	
+	public Spliterator<E> spliterator() {
+        return Spliterators.spliterator(this, Spliterator.ORDERED);
+    }
+
 }
