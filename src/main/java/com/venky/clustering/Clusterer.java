@@ -50,10 +50,10 @@ public class Clusterer<T> {
     }
     
     public List<Cluster<T>> cluster(Collection<T> points, int maxClusters){
-        return cluster(points,new MaxClustersCreated(maxClusters)); 
+        return cluster(points,new MaxClustersCreated<T>(maxClusters));
     }
     
-    public List<Cluster<T>> cluster(Collection<T> points,StopCriteria stopCritieria){
+    public List<Cluster<T>> cluster(Collection<T> points,StopCriteria<T> stopCriteria){
         List<Cluster<T>> clusters = new ArrayList<Cluster<T>>();
         for (T point: points){
             Cluster<T> init = new Cluster<T>(this);
@@ -62,7 +62,7 @@ public class Clusterer<T> {
         }
         
         Map<Cluster<T>,Map<Cluster<T>,Double>> distances = new HashMap<Cluster<T>, Map<Cluster<T>,Double>>();
-        while (!stopCritieria.canStop(clusters)){
+        while (!stopCriteria.canStop(clusters)){
 
             int indexGrown = 0; 
             int indexDestroyed = 0; 

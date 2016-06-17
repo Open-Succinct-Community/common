@@ -2,7 +2,7 @@ package com.venky.clustering;
 
 import java.util.List;
 
-public class MaxClustersCreated implements StopCriteria{
+public class MaxClustersCreated<T> implements StopCriteria<T>{
 
 	int maxClusters = 1;
 	public MaxClustersCreated(){
@@ -14,8 +14,8 @@ public class MaxClustersCreated implements StopCriteria{
 			throw new IllegalArgumentException("MaxClusters must be a positive number");
 		}
 	}
-	@Override
-	public <T> boolean canStop(List<Cluster<T>> currentClusters) {
+
+	public boolean canStop(List<Cluster<T>> currentClusters) {
 		return currentClusters.size() <= maxClusters ;
 	}
 
