@@ -9,12 +9,13 @@ import org.junit.Test;
 
 import com.venky.clustering.euclidean.EuclideanMetric;
 import com.venky.clustering.euclidean.EuclideanCenterFinder;
+import com.venky.clustering.euclidean.EuclideanCenterFinderBuilder;
 import com.venky.clustering.euclidean.EuclideanPoint;
 
 public class ClusterEuclidean {
 	@Test
 	public void test(){
-		Clusterer<EuclideanPoint> oneDimClusterer = new Clusterer<EuclideanPoint>(new EuclideanCenterFinder(),new EuclideanMetric());
+		Clusterer<EuclideanPoint> oneDimClusterer = new Clusterer<EuclideanPoint>(new EuclideanCenterFinderBuilder(),new EuclideanMetric());
 		
 		List<EuclideanPoint> points = new ArrayList<EuclideanPoint>();
 		List<EuclideanPoint> p123 = new ArrayList<EuclideanPoint>();

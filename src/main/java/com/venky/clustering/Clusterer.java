@@ -8,17 +8,31 @@ import java.util.Map;
 
 public class Clusterer<T> {
     private Metric<T> metric;
-    private CenterFinder<T> centerFinder;
-
-    public Clusterer(CenterFinder<T> cf, Metric<T> m){
-        this.metric = m;
-        this.centerFinder = cf;
+    private CenterFinderBuilder<T> centerFinderBuilder ;
+    
+    private static class DefaultCenterFinderBuilder<T> implements CenterFinderBuilder<T> {
+	    private CenterFinder<T> centerFinder;
+    	public DefaultCenterFinderBuilder(CenterFinder<T> finder) {
+    		this.centerFinder = finder;
+		}
+		@Override
+		public CenterFinder<T> build(Cluster<T> cluster) {
+			return this.centerFinder;
+		}
+    	
     }
-
-    public CenterFinder<T> getCenterFinder(){
-        return centerFinder;
+    public Clusterer(CenterFinderBuilder<T> cf, Metric<T> m){
+    	this.centerFinderBuilder = cf;
+    	this.metric = m;
     }
     
+    public Clusterer(CenterFinder<T> cf, Metric<T> m){
+    	this(new DefaultCenterFinderBuilder<T>(cf),m);
+    }
+    public Clusterer(Metric<T> m){
+    	this(new DefaultCenterFinderBuilder<T>(null),m);
+    }
+
     public Metric<T> getMetric(){
         return metric;
     }
@@ -26,7 +40,7 @@ public class Clusterer<T> {
     public List<Cluster<T>> cluster(Collection<T> points, List<T> centroids){
         List<Cluster<T>> clusters = new ArrayList<Cluster<T>>();
         for (T centroid: centroids){
-            Cluster<T> init = new Cluster<T>(this);
+            Cluster<T> init = new Cluster<T>(centerFinderBuilder,metric);
             init.addPoint(centroid);
             clusters.add(init);
         }
@@ -56,7 +70,7 @@ public class Clusterer<T> {
     public List<Cluster<T>> cluster(Collection<T> points,StopCriteria<T> stopCriteria){
         List<Cluster<T>> clusters = new ArrayList<Cluster<T>>();
         for (T point: points){
-            Cluster<T> init = new Cluster<T>(this);
+            Cluster<T> init = new Cluster<T>(centerFinderBuilder,metric);
             init.addPoint(point);
             clusters.add(init);
         }
@@ -78,7 +92,7 @@ public class Clusterer<T> {
                     Cluster<T> other = clusters.get(j);
                     Double distance = inspectedDistances.get(other); 
                     if (distance == null){
-                        if (centerFinder != null){
+                        if (inspected.centroid() != null){
                             distance = inspected.centroidDistance(other);
                         }else {
                             distance = inspected.distance(other).getMaxDistance();

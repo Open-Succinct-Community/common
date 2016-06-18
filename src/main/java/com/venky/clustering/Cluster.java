@@ -7,12 +7,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.venky.core.string.StringUtil;
 
 public class Cluster<T> {
-	private Clusterer<T> clusterer;
+	private CenterFinder<T> centerFinder;
+	private Metric<T> metric;
 	private int id ;
     private static AtomicInteger fakeId = new AtomicInteger();
-
-	public Cluster(Clusterer<T> clusterer){
-		this.clusterer = clusterer;
+    
+	public Cluster(CenterFinderBuilder<T> cf,Metric<T> m){
+		this.centerFinder = cf.build(this);
+		this.metric = m;
 		this.id = fakeId.addAndGet(1);
 	}
 	
@@ -29,8 +31,8 @@ public class Cluster<T> {
 	
 	private T centroid = null; 
 	public T centroid(){
-		if (centroid == null && clusterer.getCenterFinder() != null){
-			centroid = clusterer.getCenterFinder().center(points);
+		if (centroid == null && centerFinder != null){
+			centroid = centerFinder.center();
 		}
 		return centroid;
 	}
@@ -40,20 +42,20 @@ public class Cluster<T> {
 	public void addPoint(T t){
 		points.add(t);
 		if (centroid != null){
-			centroid = clusterer.getCenterFinder().center(centroid, points.size(), t);
+			centroid = centerFinder.center(t);
 		}
 	}
 	public double centroidDistance(T point){
 		T centroid = centroid();
 		if (centroid != null) { 
-			return clusterer.getMetric().distance(centroid, point);
+			return metric.distance(centroid, point);
 		}
 		return Double.POSITIVE_INFINITY;
 	}
 	public double centroidDistance(Cluster<T> cluster){
 		T centroid = centroid();
 		if (centroid != null) { 
-			return clusterer.getMetric().distance(centroid, cluster.centroid());
+			return metric.distance(centroid, cluster.centroid());
 		}
 		return Double.POSITIVE_INFINITY;
 	}
@@ -64,7 +66,7 @@ public class Cluster<T> {
 		distance.minDistance = Double.POSITIVE_INFINITY; 
 		distance.maxDistance = Double.NEGATIVE_INFINITY;
 		for (T p: points){
-			double d = clusterer.getMetric().distance(p, point);
+			double d = metric.distance(p, point);
 			if (d < distance.minDistance){
 				distance.minDistance = d;
 			}
@@ -85,7 +87,7 @@ public class Cluster<T> {
 		
 		for (T aPointInThisCluster: points){
 			for (T aPointInOtherCluster: cluster.getPoints()){
-				double d = clusterer.getMetric().distance(aPointInThisCluster, aPointInOtherCluster);
+				double d = metric.distance(aPointInThisCluster, aPointInOtherCluster);
 				if (d < distance.minDistance){
 					distance.minDistance = d;
 				}

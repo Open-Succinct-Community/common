@@ -6,9 +6,9 @@ import com.venky.geo.GeoLocationBuilder;
 
 public class GeographicClusterer<L extends GeoLocation> extends Clusterer<L> {
 	public GeographicClusterer(GeoLocationBuilder<L> builder) {
-		this (new GeoCentroidFinder<L>(builder),builder);
+		this(new GeoCentroidFinderBuilder<L>(builder));
 	}
-	public GeographicClusterer(GeoCentroidFinder<L> centroidFinder , GeoLocationBuilder<L> builder) {
-		super(centroidFinder, new GeoMetric<L>());
+	public GeographicClusterer(GeoCentroidFinderBuilder<L> centroidFinderBuilder) {
+		super(centroidFinderBuilder, new GeoMetric<L>());
 	}
 }

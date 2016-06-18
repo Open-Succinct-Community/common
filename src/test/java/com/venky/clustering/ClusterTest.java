@@ -8,7 +8,10 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-public class ClusterTest implements Metric<Double>, CenterFinder<Double> {
+import com.venky.clustering.euclidean.EuclideanCenterFinderBuilder;
+import com.venky.core.util.Bucket;
+
+public class ClusterTest implements Metric<Double>, CenterFinderBuilder<Double> {
 	
 	@Test
 	public void test() {
@@ -58,31 +61,35 @@ public class ClusterTest implements Metric<Double>, CenterFinder<Double> {
 		
 	}
 
-
 	@Override
-	public Double center(Collection<Double> points) {
-		double value = 0 ;
-		int n = 0 ;
-		for (Double p : points){
-			value += p;
-			n ++ ;
-		}
-		return (value/n);
+	public CenterFinder<Double> build(final Cluster<Double> cluster) {
+		return new CenterFinder<Double>() {
+			Bucket total = new Bucket();
+			@Override
+			public Double center() {
+				for (Double p : cluster.getPoints()){
+					total.increment(p);
+				}
+				int numPoints = cluster.getPoints().size();
+				return total.doubleValue()/numPoints;
+			}
+
+			@Override
+			public Double center(Double afterAddingNewPoint) {
+				total.increment(afterAddingNewPoint);
+				int numPoints = cluster.getPoints().size();
+				return total.doubleValue()/numPoints;
+			}
+		};
 	}
-
-
-	@Override
-	public Double center(Double oldCenter, int numOldPoints, Double newPoint) {
-		if (oldCenter == null){
-			return newPoint;
-		}
-		return ((oldCenter * numOldPoints) + newPoint) / (numOldPoints + 1);
-	}
-
 
 	@Override
 	public double distance(Double p1, Double p2) {
 		return Math.abs(p1 - p2);
 	}
 
+
+
+
+	
 }
