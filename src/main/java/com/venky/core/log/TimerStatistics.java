@@ -8,7 +8,6 @@ import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeSet;
 
-import com.venky.core.string.StringUtil;
 import com.venky.core.util.Bucket;
 
 
@@ -61,12 +60,11 @@ public class TimerStatistics {
 		public static Timer startTimer(String ctx){
 			return startTimer(ctx,false);
 		}
-		
 		public static Timer startTimer(String ctx,boolean additive){
 			if (!isEnabled()){
 				return dummy;
 			}
-			String context = getCaller() + (ctx == null ? "" : ":"+ StringUtil.valueOf(ctx));
+			String context = (ctx == null ? getCaller().toString() : ctx );
 			Map<String,TimerStatistics> timerStatistics = getTimerStatistics();
 			
 			TimerStatistics ts = timerStatistics.get(context);

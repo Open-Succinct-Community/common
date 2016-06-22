@@ -41,7 +41,7 @@ public class Cluster<T> {
 	private List<T> points = new ArrayList<T>();
 	public void addPoint(T t){
 		points.add(t);
-		if (centroid != null){
+		if (centerFinder != null){
 			centroid = centerFinder.center(t);
 		}
 	}

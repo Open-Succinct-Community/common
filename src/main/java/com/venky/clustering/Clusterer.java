@@ -76,7 +76,9 @@ public class Clusterer<T> {
         }
         
         Map<Cluster<T>,Map<Cluster<T>,Double>> distances = new HashMap<Cluster<T>, Map<Cluster<T>,Double>>();
-        while (!stopCriteria.canStop(clusters)){
+        Cluster<T> clusterGrown = null; 
+        Cluster<T> clusterDestroyed = null;
+        while (!stopCriteria.canStop(clusters,clusterGrown,clusterDestroyed)){
 
             int indexGrown = 0; 
             int indexDestroyed = 0; 
@@ -111,14 +113,16 @@ public class Clusterer<T> {
                 break; 
             }
             
-            Cluster<T> clusterGrown = clusters.get(indexGrown);
-            Cluster<T> clusterDestroyed = clusters.remove(indexDestroyed); //Note index Destroyed >= indexGrown.
+            clusterGrown = clusters.get(indexGrown);
+            clusterDestroyed = clusters.remove(indexDestroyed); //Note index Destroyed >= indexGrown.
             for (T p : clusterDestroyed.getPoints()){
                 clusterGrown.addPoint(p);
             }
             distances.remove(clusterGrown);
+            distances.remove(clusterDestroyed);
             for (Cluster<T> remaining: distances.keySet()){
                 distances.get(remaining).remove(clusterGrown);
+                distances.get(remaining).remove(clusterDestroyed);
             }
 
         }

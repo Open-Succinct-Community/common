@@ -15,7 +15,8 @@ public class MaxClustersCreated<T> implements StopCriteria<T>{
 		}
 	}
 
-	public boolean canStop(List<Cluster<T>> currentClusters) {
+	@Override
+	public boolean canStop(List<Cluster<T>> currentClusters, Cluster<T> clusterGrown, Cluster<T> clusterDestroyed) {
 		return currentClusters.size() <= maxClusters ;
 	}
 
