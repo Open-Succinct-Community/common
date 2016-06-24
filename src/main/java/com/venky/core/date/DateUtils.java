@@ -76,35 +76,30 @@ public class DateUtils { // NOPMD by VMahadevan on 1/26/09 11:16 PM
     }
 
     public static final String ISO_TIME_FORMAT_STR = "HH:mm:ss";
-    public static final DateFormat ISO_TIME_FORMAT = new SimpleDateFormat(ISO_TIME_FORMAT_STR,Locale.getDefault());
     
     public static final String ISO_DATE_FORMAT_STR = "yyyy-MM-dd";
-    public static final DateFormat ISO_DATE_FORMAT = new SimpleDateFormat(ISO_DATE_FORMAT_STR,Locale.getDefault());
 
     public static final String ISO_DATE_TIME_FORMAT_STR = "yyyy-MM-dd HH:mm:ss.SSS";
-    public static final DateFormat ISO_DATE_TIME_FORMAT = new SimpleDateFormat(ISO_DATE_TIME_FORMAT_STR,Locale.getDefault());
 
     
     public static final String APP_TIME_FORMAT_STR = "HH:mm";
-    public static final DateFormat APP_TIME_FORMAT = new SimpleDateFormat(APP_TIME_FORMAT_STR, Locale.getDefault());
     
     public static final String APP_TIME_FORMAT_WITH_TZ_STR = "HH:mm Z";
-    public static final DateFormat APP_TIME_FORMAT_WITH_TZ = new SimpleDateFormat(APP_TIME_FORMAT_WITH_TZ_STR, Locale.getDefault());
     
     public static final String APP_DATE_TIME_FORMAT_STR = "dd/MM/yyyy HH:mm:ss";
-    public static final DateFormat APP_DATE_TIME_FORMAT = new SimpleDateFormat(APP_DATE_TIME_FORMAT_STR, Locale.getDefault());
     
     public static final String APP_DATE_TIME_FORMAT_WITH_TZ_STR = "dd/MM/yyyy HH:mm:ss Z";
-    public static final DateFormat APP_DATE_TIME_FORMAT_WITH_TZ = new SimpleDateFormat(APP_DATE_TIME_FORMAT_WITH_TZ_STR, Locale.getDefault());
     
     public static final String APP_DATE_FORMAT_STR = "dd/MM/yyyy";
-    public static final DateFormat APP_DATE_FORMAT = new SimpleDateFormat(APP_DATE_FORMAT_STR, Locale.getDefault());
     
     public static final Date HIGH_DATE = getHighDate();
 
+    public static DateFormat getFormat(String fmt){
+        return new SimpleDateFormat(fmt, Locale.getDefault());    
+    }
     private static Date getHighDate() {
         try {
-            return APP_DATE_TIME_FORMAT.parse("31/12/2999 12:59:59"); // NOPMD by VMahadevan on 1/26/09 11:12 PM
+            return getFormat(APP_DATE_TIME_FORMAT_STR).parse("31/12/2999 12:59:59"); // NOPMD by VMahadevan on 1/26/09 11:12 PM
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -164,79 +159,62 @@ public class DateUtils { // NOPMD by VMahadevan on 1/26/09 11:16 PM
     }
 
     public static Date getDate(final String dateStr) {
-        try {
-            return APP_DATE_TIME_FORMAT_WITH_TZ.parse(dateStr);
-        } catch (ParseException e) {
-        }
-        try {
-            return APP_DATE_TIME_FORMAT.parse(dateStr);
-        } catch (ParseException e) {
-        }
-        try { 
-        	return ISO_DATE_TIME_FORMAT.parse(dateStr);
-        }catch (ParseException e){
-        }
+    	String[] trialFormats = new String[] { APP_DATE_TIME_FORMAT_WITH_TZ_STR , APP_DATE_TIME_FORMAT_STR, ISO_DATE_TIME_FORMAT_STR,
+    			APP_DATE_FORMAT_STR, ISO_DATE_FORMAT_STR };
+    	for (String trialFormat : trialFormats ){
+    			try {
+					return getFormat(trialFormat).parse(dateStr);
+				} catch (ParseException e) {
+					//e.printStackTrace();
+				}
+    	}
 
-        try {
-            return APP_DATE_FORMAT.parse(dateStr);
-        } catch (ParseException e) {
-        }
-        try { 
-        	return ISO_DATE_FORMAT.parse(dateStr);
-        }catch (ParseException e){
-        }
         try {
         	long time = Long.parseLong(dateStr);
         	return new Date(time);
         }catch (NumberFormatException ex){
         }
-        throw new RuntimeException("Unknown Date Format");
+        throw new RuntimeException("Unknown Date Format : " + dateStr);
     }
 
     public static Date getTime(String time) {
-        try {
-            return APP_TIME_FORMAT_WITH_TZ.parse(time); 
-        } catch (ParseException ex) {
-        }
-        
-        try {
-            return APP_TIME_FORMAT.parse(time);
-        } catch (ParseException ex) {
-        }
-        try { 
-        	return ISO_TIME_FORMAT.parse(time);
-        }catch (ParseException e){
-        }
-        
-        throw new RuntimeException("Unknown Time Format");
+    	String[] trialFormats = new String[] { APP_TIME_FORMAT_WITH_TZ_STR, APP_TIME_FORMAT_STR , ISO_TIME_FORMAT_STR };
+    	for (String trialFormat : trialFormats ){
+			try {
+				return getFormat(trialFormat).parse(time);
+			} catch (ParseException e) {
+				//
+			}
+	}
+    	throw new RuntimeException("Unknown Time Format");
     }
 
     public static String getTimeStr(final Date time) {
         return getTimeStr(time, TimeZone.getDefault());
     }
     public static String getTimeStr(final Date time,TimeZone zone) {
-        return getTimestampStr(time, zone,APP_TIME_FORMAT_WITH_TZ);
+        return getTimestampStr(time, zone, APP_TIME_FORMAT_WITH_TZ_STR);
     }
 
 
     public static String getDateStr(final Date date) {
-        return getTimestampStr(date, TimeZone.getDefault(),APP_DATE_FORMAT);
+        return getTimestampStr(date, TimeZone.getDefault(),APP_DATE_FORMAT_STR);
     }
 
     public static String getTimestampStr(final Date date){
-    	return getTimestampStr(date,TimeZone.getDefault(),APP_DATE_TIME_FORMAT_WITH_TZ);
+    	return getTimestampStr(date,TimeZone.getDefault(),APP_DATE_TIME_FORMAT_WITH_TZ_STR);
     }
     
     public static String getTimestampStr(final Date date,final String tz){
     	TimeZone zone = SimpleTimeZone.getTimeZone(tz);
-    	return getTimestampStr(date,zone,APP_DATE_TIME_FORMAT_WITH_TZ);
+    	return getTimestampStr(date,zone,APP_DATE_TIME_FORMAT_WITH_TZ_STR);
     }
-    
-    public static String getTimestampStr(final Date inOneTimeZone, final TimeZone zone, DateFormat datefmt) {
-    	DateFormat fmt = (DateFormat)datefmt.clone();
-		fmt.setTimeZone(zone);
+    public static String getTimestampStr(final Date inOneTimeZone, final TimeZone zone, String datefmt){
+    	DateFormat fmt = getFormat(datefmt);
+    	fmt.setTimeZone(zone);
         return fmt.format(inOneTimeZone);
     }
+    
     
     public static Date getDate(final Date inOneTimeZone, final String tz) {
         final TimeZone zone = SimpleTimeZone.getTimeZone(tz);
