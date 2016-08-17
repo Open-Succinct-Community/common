@@ -79,7 +79,9 @@ public class DateUtils { // NOPMD by VMahadevan on 1/26/09 11:16 PM
     
     public static final String ISO_DATE_FORMAT_STR = "yyyy-MM-dd";
 
-    public static final String ISO_DATE_TIME_FORMAT_STR = "yyyy-MM-dd HH:mm:ss.SSS";
+    public static final String ISO_DATE_TIME_FORMAT_STR = "yyyy-MM-dd HH:mm:ss";
+
+    public static final String ISO_DATE_TIME_FORMAT_WITH_MILLIS_STR = "yyyy-MM-dd HH:mm:ss.SSS";
 
     
     public static final String APP_TIME_FORMAT_STR = "HH:mm";
@@ -159,8 +161,7 @@ public class DateUtils { // NOPMD by VMahadevan on 1/26/09 11:16 PM
     }
 
     public static Date getDate(final String dateStr) {
-    	String[] trialFormats = new String[] { APP_DATE_TIME_FORMAT_WITH_TZ_STR , APP_DATE_TIME_FORMAT_STR, ISO_DATE_TIME_FORMAT_STR,
-    			APP_DATE_FORMAT_STR, ISO_DATE_FORMAT_STR };
+    	String[] trialFormats = new String[] { APP_DATE_TIME_FORMAT_WITH_TZ_STR , APP_DATE_TIME_FORMAT_STR, ISO_DATE_TIME_FORMAT_WITH_MILLIS_STR, ISO_DATE_TIME_FORMAT_STR, APP_DATE_FORMAT_STR, ISO_DATE_FORMAT_STR };
     	for (String trialFormat : trialFormats ){
     			try {
 					return getFormat(trialFormat).parse(dateStr);
