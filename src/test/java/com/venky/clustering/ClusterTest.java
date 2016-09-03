@@ -1,15 +1,13 @@
 package com.venky.clustering;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-
-import junit.framework.Assert;
 
 import org.junit.Test;
 
-import com.venky.clustering.euclidean.EuclideanCenterFinderBuilder;
 import com.venky.core.util.Bucket;
+
+import junit.framework.Assert;
 
 public class ClusterTest implements Metric<Double>, CenterFinderBuilder<Double> {
 	

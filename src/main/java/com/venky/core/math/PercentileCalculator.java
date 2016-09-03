@@ -65,8 +65,8 @@ public class PercentileCalculator<T> {
     	};
     	int leftSize = (int)(this.dPercentile * populationSize) ;
     	int rightSize =(int)(populationSize - leftSize) ;
-    	this.left =  new ArrayList<>(leftSize + 10); //Just some buffer!! 
-    	this.right = new ArrayList<>(rightSize + 10);
+    	this.left =  new ArrayList<T>(leftSize + 10); //Just some buffer!! 
+    	this.right = new ArrayList<T>(rightSize + 10);
     	
     }
     

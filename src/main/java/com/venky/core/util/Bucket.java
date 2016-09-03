@@ -5,6 +5,8 @@
 package com.venky.core.util;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.venky.core.checkpoint.Mergeable;
 
@@ -12,12 +14,19 @@ import com.venky.core.checkpoint.Mergeable;
  *
  * @author venky
  */
-public class Bucket extends Number implements Cloneable, Serializable, Mergeable<Bucket>, Comparable<Bucket> {
+public class Bucket extends Number implements Cloneable, Serializable, Mergeable<Bucket>, Comparable<Bucket>, ChangeObservable  {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 3777328906346580670L;
 	private double counter;
+	private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+	
+	public void registerChangeListener(ChangeListener listener){
+		synchronized (this) {
+			listeners.add(listener);
+		}
+	}
 	
     public Bucket(){
         this(0.0);
@@ -34,9 +43,22 @@ public class Bucket extends Number implements Cloneable, Serializable, Mergeable
     public void decrement(double by){
         increment(-1.0 * by);
     }
+    
+    private boolean eventFired = false;
     public final void increment(double by){
         synchronized (this){
-            counter += by; 
+            double old = counter;
+        	counter += by;
+        	if (!eventFired) {
+        		eventFired = true;
+        		try{
+	                for (ChangeListener listener:listeners){
+	                	listener.hasChanged(old, counter);
+	                }
+        		}finally{
+        			eventFired = false;
+        		}
+        	}
         }
     }
     public double value() {
@@ -48,7 +70,7 @@ public class Bucket extends Number implements Cloneable, Serializable, Mergeable
 
     @Override
     public String toString() {
-        return "value: " + counter;
+        return String.valueOf(counter);
     }
     
     @Override

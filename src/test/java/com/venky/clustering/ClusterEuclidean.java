@@ -3,14 +3,13 @@ package com.venky.clustering;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.junit.Test;
 
-import com.venky.clustering.euclidean.EuclideanMetric;
-import com.venky.clustering.euclidean.EuclideanCenterFinder;
 import com.venky.clustering.euclidean.EuclideanCenterFinderBuilder;
+import com.venky.clustering.euclidean.EuclideanMetric;
 import com.venky.clustering.euclidean.EuclideanPoint;
+
+import junit.framework.Assert;
 
 public class ClusterEuclidean {
 	@Test
