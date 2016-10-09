@@ -109,8 +109,8 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 			synchronized (cacheMap) {
 				v = cacheMap.get(key);
 				if (v == null && !cacheMap.containsKey(key)){
-					makeSpace();
 					v = getValue(key);
+					makeSpace();
 					cacheMap.put(key, v);
 				}
 			}
