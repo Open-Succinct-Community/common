@@ -85,10 +85,13 @@ public class PercentileCalculator<T> {
     	}
     }
     public T getPercentile() {
-    	if (balance() > 0) { // Left has more weight than needed.
+    	int balance  = balance();
+    	if (balance > 0) { // Left has more weight than needed.
             return leftRoot;
-        } else {
+        } else if (balance < 0){
             return rightRoot;
+        } else {
+        	return leftRoot != null ? leftRoot : rightRoot ;
         }
     }
     

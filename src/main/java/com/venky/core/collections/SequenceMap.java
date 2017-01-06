@@ -11,6 +11,15 @@ public class SequenceMap<K,V> implements Map<K, V>{
 	private HashMap<K, V> inner = new HashMap<K, V>();
 	private SequenceSet<K> keys = new SequenceSet<K>();
 
+	public int indexOf(K key){
+		return keys.indexOf(key);
+	}
+	
+	public V getValueAt(int i) {
+		return get(keys.get(i));
+	}
+	
+	
 	@Override
 	public int size() {
 		return inner.size();

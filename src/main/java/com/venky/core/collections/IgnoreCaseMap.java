@@ -1,5 +1,6 @@
 package com.venky.core.collections;
 
+import java.util.Comparator;
 import java.util.TreeMap;
 
 import com.venky.core.checkpoint.Mergeable;
@@ -7,7 +8,15 @@ import com.venky.core.util.ObjectUtil;
 
 public class IgnoreCaseMap<V> extends TreeMap<String, V> implements Cloneable, Mergeable<IgnoreCaseMap<V>>{
 	private static final long serialVersionUID = 5311588254312204361L;
+	
+	public IgnoreCaseMap(){
+		super();
+	}
+	public IgnoreCaseMap(Comparator<String> c){
+		super(c);
+	}
 
+	
 	protected String ucase(Object other){
 		return UpperCaseStringCache.instance().get(String.valueOf(other));
 	}
