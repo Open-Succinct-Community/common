@@ -3,11 +3,12 @@ package com.venky.core.collections;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 
-public class SequenceMap<K,V> implements Map<K, V>{
+public class SequenceMap<K,V> implements Map<K, V> {
 	private HashMap<K, V> inner = new HashMap<K, V>();
 	private SequenceSet<K> keys = new SequenceSet<K>();
 
@@ -17,6 +18,14 @@ public class SequenceMap<K,V> implements Map<K, V>{
 	
 	public V getValueAt(int i) {
 		return get(keys.get(i));
+	}
+	
+	public SequenceMap<K,V> reverse(){ 
+		SequenceMap<K, V> ret = new SequenceMap<>();
+		for (int i = keys.size() - 1; i >=0 ; i --){
+			ret.put(keys.get(i), getValueAt(i));
+		}
+		return ret;
 	}
 	
 	
@@ -86,5 +95,25 @@ public class SequenceMap<K,V> implements Map<K, V>{
 	public Set<java.util.Map.Entry<K, V>> entrySet() {
 		return Collections.unmodifiableSet(inner.entrySet());
 	}
+	
+	
+	@Override
+	public String toString(){ 
+        if (size() == 0)
+            return "{}";
 
+        StringBuilder sb = new StringBuilder();
+        sb.append('{');
+        for (int i = 0 ; i < keys.size() ; i ++) {
+            K key = keys.get(i);
+            V value = inner.get(key);
+            if (i > 0) {
+            	sb.append(',').append(' ');
+            }
+            sb.append(key   == this ? "(this Map)" : key);
+            sb.append('=');
+            sb.append(value == this ? "(this Map)" : value);
+        }
+        return sb.append('}').toString();
+	}
 }

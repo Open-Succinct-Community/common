@@ -23,6 +23,14 @@ public class SequenceSet<E> implements Set<E> , Cloneable, List<E>{
 		list = new ArrayList<E>();
 	}
 
+	public SequenceSet<E> reverse(){ 
+		SequenceSet<E> ret = new SequenceSet<>();
+		for (int i = list.size() - 1 ; i >= 0 ; i --) {
+			ret.add(list.get(i));
+		}
+		return ret;
+	}
+	
 	public List<E> list() {
 		return Collections.unmodifiableList(list);
 	}
