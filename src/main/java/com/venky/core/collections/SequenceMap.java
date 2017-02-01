@@ -21,7 +21,7 @@ public class SequenceMap<K,V> implements Map<K, V> {
 	}
 	
 	public SequenceMap<K,V> reverse(){ 
-		SequenceMap<K, V> ret = new SequenceMap<>();
+		SequenceMap<K, V> ret = new SequenceMap<K,V>();
 		for (int i = keys.size() - 1; i >=0 ; i --){
 			ret.put(keys.get(i), getValueAt(i));
 		}

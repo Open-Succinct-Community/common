@@ -25,7 +25,7 @@ public class SortSequenceSet {
 	
 	@Test
 	public void testReversal() {
-		SequenceSet<Integer> s = new SequenceSet<>(); 
+		SequenceSet<Integer> s = new SequenceSet<Integer>(); 
 		for (int i = 0 ; i < 10;  i ++) {
 			s.add(i);
 		}
@@ -37,7 +37,7 @@ public class SortSequenceSet {
 	}
 	@Test
 	public void testReversalMap() {
-		SequenceMap<Integer,String> s = new SequenceMap<>(); 
+		SequenceMap<Integer,String> s = new SequenceMap<Integer,String>(); 
 		for (int i = 0 ; i < 10;  i ++) {
 			s.put(i,String.valueOf(i));
 		}
