@@ -1,5 +1,6 @@
 package com.venky.geo;
 
+import java.math.BigDecimal;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -9,10 +10,12 @@ import com.venky.xml.XMLElement;
 
 
 public class GeoDistance {
-	public static int distanceKms(double lat1, double lng1, double lat2, double lng2 ){
-		return (int)(6378 * Math.acos(Math.sin(lat1*Math.PI/180.0) * Math.sin(lat2*Math.PI/180.0) + Math.cos(lat1*Math.PI/180.0) * Math.cos(lat2*Math.PI/180.0) * Math.cos((lng2 - lng1)*Math.PI/180.0)));
+	static final double R = 6378.1370  ; //Equitorial Radius of Earth.
+
+	public static double distanceKms(BigDecimal lat1, BigDecimal lng1, BigDecimal lat2, BigDecimal lng2 ){
+		return new GeoCoordinate(lat1, lng1).distanceTo(new GeoCoordinate(lat2, lng2));
 	}
-	public static int getDrivingDistanceKms(double lat1, double lng1, double lat2, double lng2){
+	public static double getDrivingDistanceKms(BigDecimal lat1, BigDecimal lng1, BigDecimal lat2, BigDecimal lng2){
 		String url = "http://open.mapquestapi.com/directions/v1/route?outFormat=xml&unit=k&from="+lat1+","+lng1 +"&to=" + lat2 + "," + lng2 ;
 		try {
 			 URL u = new URL(url);
@@ -21,7 +24,7 @@ public class GeoDistance {
 	         XMLElement status = doc.getDocumentRoot().getChildElement("info").getChildElement("statusCode");
 	         if (ObjectUtil.equals("0",status.getNodeValue())){
 	        	 XMLElement distance = doc.getDocumentRoot().getChildElement("route").getChildElement("distance");
-	        	 return Double.valueOf(distance.getNodeValue()).intValue();
+	        	 return Double.valueOf(distance.getNodeValue()).doubleValue();
 	         }
 		}catch(Exception e){
 			// Nothing to do.

@@ -1,7 +1,5 @@
 package com.venky.core.date;
 
-import static org.junit.Assert.*;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 

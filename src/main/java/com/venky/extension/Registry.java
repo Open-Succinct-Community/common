@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import com.venky.core.log.TimerStatistics.Timer;
-
 
 public class Registry {
 	private Registry(){
@@ -35,12 +33,7 @@ public class Registry {
 	
 	public void callExtensions(String pointName, Object... context){
 		for (Extension extn : getExtensions(pointName)){
-			Timer timer = Timer.startTimer(extn.getClass().getName());
-			try {
-				extn.invoke(context);
-			}finally {
-				timer.stop();
-			}
+			extn.invoke(context);
 		}
 	}
 	

@@ -5,6 +5,7 @@
 package com.venky.geo;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
@@ -46,13 +47,12 @@ public class GeoCoder {
     public void fillGeoInfo(String address,GeoLocation location){
     	GeoLocation result = getLocation(address);
     	if (result != null){
-	    	location.setLatitude(result.getLatitude());
-	    	location.setLongitude(result.getLongitude());
+	    	location.setLat(result.getLat());
+	    	location.setLng(result.getLng());
     	}
     }
     
-    private static final GeoLocationBuilder<GeoLocation> builder = new DefaultGeoLocationBuilder();
-	Collection<GeoSP> sps = null ;
+    Collection<GeoSP> sps = null ;
 	public GeoLocation getLocation(String address){
     	if (preferredServiceProvider == null ){
     		sps = Arrays.asList(availableSps.get("yahoo"),availableSps.get("google"),availableSps.get("openstreetmap"));
@@ -89,7 +89,7 @@ public class GeoCoder {
 			        if (Double.valueOf(radius) < 5000){    	
 		            	String latitude = result.getChildElement("latitude").getNodeValue();
 		            	String longitude = result.getChildElement("longitude").getNodeValue();
-		            	return builder.create(Float.valueOf(latitude), Float.valueOf(longitude));
+		            	return new GeoCoordinate(new BigDecimal(latitude), new BigDecimal(longitude));
 			        }
 	            }
 			}catch (IOException ex){
@@ -121,7 +121,7 @@ public class GeoCoder {
 	                        lng = Float.valueOf(node.getChildren().next().getNodeValue());
 	                    }
 	                }
-	                return builder.create(lat,lng);
+	                return new GeoCoordinate(new BigDecimal(lat),new BigDecimal(lng));
 	            }
 	        } catch (IOException e) {
 	           Logger.getLogger(getClass().getName()).warning(e.getMessage());
@@ -142,9 +142,7 @@ public class GeoCoder {
 	            
 	            if (place != null){
 	            	Logger.getLogger(getClass().getName()).info("URL:" + url);
-	                float lat= Float.valueOf(place.getAttribute("lat")); 
-	                float lng= Float.valueOf(place.getAttribute("lon")) ;
-	                return builder.create(lat,lng);
+	                return new GeoCoordinate(new BigDecimal(place.getAttribute("lat")),new BigDecimal(place.getAttribute("lon")));
 	            }
 	        } catch (IOException e) {
 	           Logger.getLogger(getClass().getName()).warning(e.getMessage());

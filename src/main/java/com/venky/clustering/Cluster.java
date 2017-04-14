@@ -1,6 +1,7 @@
 package com.venky.clustering;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -85,8 +86,10 @@ public class Cluster<T> {
 		distance.minDistance = Double.POSITIVE_INFINITY; 
 		distance.maxDistance = Double.NEGATIVE_INFINITY;
 		
-		for (T aPointInThisCluster: points){
-			for (T aPointInOtherCluster: cluster.getPoints()){
+		for (Iterator<T> i = points.iterator() ; i.hasNext() && distance.maxDistance < Double.POSITIVE_INFINITY ; ){
+			T aPointInThisCluster = i.next();
+			for (Iterator<T> otherClusterPointIterator = cluster.getPoints().iterator(); otherClusterPointIterator.hasNext() && distance.maxDistance < Double.POSITIVE_INFINITY ; ){
+				T aPointInOtherCluster = otherClusterPointIterator.next();
 				double d = metric.distance(aPointInThisCluster, aPointInOtherCluster);
 				if (d < distance.minDistance){
 					distance.minDistance = d;

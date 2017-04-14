@@ -18,18 +18,22 @@ public class DateUtils { // NOPMD by VMahadevan on 1/26/09 11:16 PM
     public static int compareToMinutes(final Date d1, final Date d2) {
         return compareToMinutes(d1.getTime(), d2.getTime());
     }
-
+    public static double compareToDMinutes(final Date d1, final Date d2) {
+        return compareToDMinutes(d1.getTime(), d2.getTime());
+    }
     public static long compareToMillis(final long millis1, final long millis2) {
         return (millis1 - millis2);
     }
-
     public static int compareToMinutes(final long millis1, final long millis2) {
+    	return (int) Math.round(compareToDMinutes(millis1, millis2));
+    }
+    public static double compareToDMinutes(final long millis1, final long millis2) {
         final long millisecondDiff = compareToMillis(millis1, millis2);
 
-        final double millisecondsInMinute = 60 * 1000;
+        final double millisecondsInMinute = 60 * 1000.0;
 
         final double diff = (millisecondDiff) / millisecondsInMinute;
-        return (int) Math.round(diff);
+        return diff;
     }
 
     public static Date max(final Date d1, final Date d2) {

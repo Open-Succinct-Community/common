@@ -1,6 +1,6 @@
 package com.venky.core.collections;
 
-import java.util.Arrays;
+import java.util.Iterator;
 
 import org.junit.Test;
 
@@ -13,7 +13,12 @@ public class RemoveFromSequenceSet {
 		s.add("3");
 		s.add("4");
 		
-		s.retainAll(Arrays.asList(new String[]{"1","5"}));
+		for (Iterator<String> i = s.iterator(); i.hasNext() ; ){
+			String s1 = i.next();
+			System.out.println(s1);
+			i.remove();
+		}
+		
 		System.out.println(s);
 		
 		

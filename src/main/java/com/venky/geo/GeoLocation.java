@@ -1,9 +1,11 @@
 package com.venky.geo;
 
+import java.math.BigDecimal;
+
 public interface GeoLocation {
-	public Float getLatitude(); 
-	public void setLatitude(Float latitude);
+	public BigDecimal getLat(); 
+	public void setLat(BigDecimal latitude);
 	
-	public Float getLongitude();
-	public void setLongitude(Float longitude);
+	public BigDecimal getLng();
+	public void setLng(BigDecimal longitude);
 }

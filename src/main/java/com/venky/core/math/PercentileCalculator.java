@@ -220,4 +220,12 @@ public class PercentileCalculator<T> {
     public List<T> right(){ 
     	return right;
     }
+    
+    public List<T> rightTrim(double atPercentile){
+    	double midSize = (atPercentile - this.dPercentile);
+		double newpercentile = midSize/(100.0 - this.dPercentile);
+		PercentileCalculator<T> pc = new PercentileCalculator<T>(newpercentile);
+		pc.addAll(right());
+		return pc.left();
+    }
 }

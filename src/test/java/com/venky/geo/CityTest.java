@@ -48,8 +48,8 @@ public class CityTest {
         try {
         	City instance = new City("Bangalore");
             GeoLocation result = instance.getLocation();
-            assertEquals(12.9716,result.getLatitude(),0.02);
-            assertEquals(77.5946,result.getLongitude(),0.02);
+            assertEquals(12.9716,result.getLat().doubleValue(),0.02);
+            assertEquals(77.5946,result.getLng().doubleValue(),0.02);
         }catch (Exception ex){
         	if (ex.getCause() instanceof SAXParseException){
             	if (ex.getCause().getMessage().startsWith("Premature end of file")){

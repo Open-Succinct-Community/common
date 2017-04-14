@@ -3,8 +3,10 @@ package com.venky.cache;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -13,7 +15,7 @@ import com.venky.core.checkpoint.Mergeable;
 import com.venky.core.util.Bucket;
 import com.venky.core.util.ObjectUtil;
 
-public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable{
+public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable ,Map<K,V>{
 	
 	/**
 	 * 
@@ -45,8 +47,7 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 				return;
 			}
 			if (pruneFactor == 1){
-				cacheMap.clear();
-				accessTimeMap.clear();
+				clear();
 				return;
 			}
 			SortedMap<Long,List<K>> keysAccessedByTime = new TreeMap<Long, List<K>>(); 
@@ -62,8 +63,7 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 			int numEntriesRemoved = 0;
 			for (Long time: keysAccessedByTime.keySet()){//We will read in the order of being Accessed.
 				for (K key : keysAccessedByTime.get(time)){
-					cacheMap.remove(key);
-					accessTimeMap.remove(key);
+					remove(key);
 					numEntriesRemoved ++;
 				}
 				if (numEntriesRemoved >= numEntriesToRemove){
@@ -97,35 +97,50 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 	}
 	
 	public Set<K> keySet(){
-		return cacheMap.keySet();
+		return Collections.unmodifiableSet(cacheMap.keySet());
+	}
+	
+	@Override
+	public boolean containsKey(Object key){
+		return cacheMap.containsKey(key);
+	}
+	public boolean isEmpty() {
+		return cacheMap.isEmpty();
+	}
+	public boolean containsValue(Object value) {
+		return cacheMap.containsValue(value);
 	}
 	
 	private HashMap<K,V> cacheMap = new HashMap<K, V>();
 	private HashMap<K,Long> accessTimeMap = new HashMap<K, Long>();
 	
-	public V get(K key){
+	@SuppressWarnings("unchecked")
+	@Override
+	public V get(Object key){
 		V v = cacheMap.get(key);
 		if (v == null && !cacheMap.containsKey(key)){
 			synchronized (cacheMap) {
 				v = cacheMap.get(key);
 				if (v == null && !cacheMap.containsKey(key)){
-					v = getValue(key);
+					v = getValue((K)key);
 					makeSpace();
-					cacheMap.put(key, v);
+					cacheMap.put((K)key, v);
 				}
 			}
 		}
 		fakeTime.increment();
-		accessTimeMap.put(key, fakeTime.longValue());
+		accessTimeMap.put((K)key, fakeTime.longValue());
 		return v;
 	}
 	
 	
-	public void remove(K key){
+	public V remove(Object key){
+		V previous = null;
 		synchronized (cacheMap) {
-			cacheMap.remove(key);
+			previous = cacheMap.remove(key);
 			accessTimeMap.remove(key);
 		}
+		return previous;
 	}
 	public void clear(){
 		synchronized (cacheMap) {
@@ -134,12 +149,14 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 		}
 	}
 	
-	public void put(K key,V value){
+	public V put(K key,V value){
+		V previous = null;
 		synchronized (cacheMap) {
-			cacheMap.put(key, value);
+			previous = cacheMap.put(key, value);
 			fakeTime.increment();
 			accessTimeMap.put(key, fakeTime.longValue());
 		}
+		return previous;
 	}
 	
 	protected abstract V getValue(K k);
@@ -149,5 +166,17 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 	
 	public Collection<V> values(){
 		return cacheMap.values();
+	}
+
+	@Override
+	public void putAll(Map<? extends K, ? extends V> m) {
+		for (Entry<K,V> e: entrySet()){ 
+			put(e.getKey(),e.getValue());
+		}
+	}
+
+	@Override
+	public Set<java.util.Map.Entry<K, V>> entrySet() {
+		return Collections.unmodifiableSet(cacheMap.entrySet());
 	}
 }

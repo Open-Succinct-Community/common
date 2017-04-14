@@ -1,55 +1,85 @@
 package com.venky.clustering.geography;
 
+import com.venky.cache.Cache;
 import com.venky.clustering.CenterFinder;
 import com.venky.clustering.Cluster;
 import com.venky.core.util.Bucket;
-import com.venky.geo.GeoLocation;
-import com.venky.geo.GeoLocationBuilder;
+import com.venky.geo.GeoCoordinate;
+import com.venky.geo.Vector3d;
 
-public class GeoCentroidFinder<L extends GeoLocation> implements CenterFinder<L>{
-	private GeoLocationBuilder<L> geoLocationBuilder;
-	private Cluster<L> cluster;
-	private L center;
-	public GeoCentroidFinder(Cluster<L> cluster,GeoLocationBuilder<L> builder){
+
+public class GeoCentroidFinder implements CenterFinder<GeoCoordinate>{
+	protected final Cluster<GeoCoordinate> cluster;
+	private GeoCoordinate center;
+	public GeoCentroidFinder(Cluster<GeoCoordinate> cluster){
 		this.cluster = cluster;
-		this.geoLocationBuilder = builder;
 	}
+	
 	@Override
-	public L center() {
-		Bucket x = new Bucket();
-		Bucket y = new Bucket();
-		Bucket z = new Bucket();
-		for (L loc: cluster.getPoints()){
-			double cosLat = Math.cos(loc.getLatitude()*Math.PI / 180.0);
-			double sinLat = Math.sin(loc.getLatitude()*Math.PI / 180.0);
-			double cosLng = Math.cos(loc.getLongitude()*Math.PI / 180.0);
-			double sinLng = Math.sin(loc.getLongitude()*Math.PI / 180.0);
-			
-			x.increment(cosLat * cosLng);
-			y.increment(cosLat * sinLng);
-			z.increment(sinLat);
-		}
-		int numPoints = cluster.getPoints().size();
-		float lat = (float)(Math.asin(z.value()/numPoints)*180.0/Math.PI);
-		float lng = (float)(Math.atan(y.value() / x.value()) * 180.0/Math.PI);
-		this.center =  geoLocationBuilder.create(lat,lng);
-		return center;
-	}
+	public GeoCoordinate center() {
+		Cache<String,Bucket> centerTracker = new Cache<String, Bucket>(0,0) {
+			private static final long serialVersionUID = -7958590967148503171L;
 
-	@Override
-	public L center( L newPoint) {
-		Bucket lat = new Bucket();
-		Bucket lng = new Bucket();
+			@Override
+			protected Bucket getValue(String k) {
+				return new Bucket();
+			}
+		}; 
 		
-		int numOldPoints = cluster.getPoints().size()-1;
-		if (center != null){
-			lat.increment(center.getLatitude() * numOldPoints);
-			lng.increment(center.getLongitude() * numOldPoints);
+		for (GeoCoordinate loc: cluster.getPoints()){
+			computeCentroidAttributes(centerTracker, loc,1);
 		}
-		lat.increment(newPoint.getLatitude());
-		lng.increment(newPoint.getLongitude());
-		center = geoLocationBuilder.create(lat.floatValue()/(numOldPoints + 1), lng.floatValue() / (numOldPoints + 1));
+		center = center(centerTracker);
 		return center;
 	}
+	protected void computeCentroidAttributes(Cache<String,Bucket> centerTracker, GeoCoordinate loc, int wt){
+		Vector3d tmp = loc.toVector();
+		Bucket x = centerTracker.get("x");
+		Bucket y = centerTracker.get("y");
+		Bucket z = centerTracker.get("z");
+		
+		x.increment(tmp.x * wt);
+		y.increment(tmp.y * wt);
+		z.increment(tmp.z * wt);
+	}
+	
+	protected GeoCoordinate center(Cache<String,Bucket> centerTracker){
+		Bucket x = centerTracker.get("x");
+		Bucket y = centerTracker.get("y");
+		Bucket z = centerTracker.get("z");
+		int numPoints = cluster.getPoints().size();
+		return center(x,y,z,numPoints);
+	}
+	
+	
+	private GeoCoordinate center(Bucket xTot, Bucket yTot, Bucket zTot, int numPoints ) {
+		double xavg = xTot.doubleValue()/numPoints; 
+		double yavg = yTot.doubleValue()/numPoints; 
+		double zavg = zTot.doubleValue()/numPoints;
+		return new GeoCoordinate(new Vector3d(xavg, yavg, zavg));
+	}
 
+	@Override
+	public GeoCoordinate center(GeoCoordinate afterAddingNewPoint) {
+		if (center == null) {
+			center = center();
+		}else {
+			Cache<String,Bucket> centerTracker = new Cache<String, Bucket>(0,0) {
+				private static final long serialVersionUID = -7958590967148503171L;
+
+				@Override
+				protected Bucket getValue(String k) {
+					return new Bucket();
+				}
+			}; 
+			int numPoints = cluster.getPoints().size();
+			int previousSize = numPoints - 1;
+
+			computeCentroidAttributes(centerTracker, center , previousSize);
+			computeCentroidAttributes(centerTracker, afterAddingNewPoint, 1);
+
+			center = center(centerTracker);
+		}
+		return center;
+	}
 }

@@ -25,11 +25,15 @@ public class GCDFinderTest  {
 	/*
 	 * Test method for 'com.yantra.tools.algorithms.math.GCDFinder.gcd(int[])'
 	 */
+	@Test
 	public void testGcdIntArray() {
 		Assert.assertEquals(finder.gcd(new int[] { }), 0);
 		Assert.assertEquals(finder.gcd(new int[] { 2 }), 2);
 		Assert.assertEquals(finder.gcd(new int[] { 4,6}), 2);
-		Assert.assertEquals(finder.gcd(new int[] { 16,8,12}), 4);
+		Assert.assertEquals(finder.gcd(new int[] { -16,-8,12}), 4);
+		Assert.assertEquals(finder.gcd(new int[] { -1,-1,-2}), 1);
+		Assert.assertEquals(finder.gcd(new int[] { -1,-1,-1}), 1);
+		
 	}
 
 }

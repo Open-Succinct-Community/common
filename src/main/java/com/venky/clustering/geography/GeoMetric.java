@@ -1,14 +1,13 @@
 package com.venky.clustering.geography;
 
 import com.venky.clustering.Metric;
-import com.venky.geo.GeoDistance;
-import com.venky.geo.GeoLocation;
+import com.venky.geo.GeoCoordinate;
 
-public class GeoMetric<L extends GeoLocation> implements Metric<L>{
+public class GeoMetric implements Metric<GeoCoordinate>{
 
 	@Override
-	public double distance(GeoLocation p1, GeoLocation p2) {
-		return GeoDistance.distanceKms(p1.getLatitude(), p1.getLongitude(), p2.getLatitude(), p2.getLongitude());
+	public double distance(GeoCoordinate p1, GeoCoordinate p2) {
+		return p1.distanceTo(p2);
 	}
 
 }
