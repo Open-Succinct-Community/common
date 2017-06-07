@@ -6,6 +6,9 @@ import com.venky.core.string.StringUtil;
 
 public class StringReader extends java.io.StringReader{
 
+	public StringReader(){ 
+		this("");
+	}
 	private int length = 0;  
 	public StringReader(String s) {
 		super(s);
