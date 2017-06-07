@@ -7,6 +7,14 @@ public class GeoCoordinate implements GeoLocation{
 	private double lngInRadians;
 	private static final double R = 6378.1370  ; //Equitorial Radius of Earth.
 	private GeoLocation inner ; 
+	@Deprecated
+	/**
+	 * deprecated use GeoCoordinate(GeoLocation ref) ;
+	 * Kept for Serialization routines.
+	 */
+	public GeoCoordinate(){
+		
+	}
 	public GeoCoordinate(GeoLocation ref){
 		setInner(ref);
 	}
