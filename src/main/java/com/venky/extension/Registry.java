@@ -1,8 +1,10 @@
 package com.venky.extension;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+
+import com.venky.core.collections.SequenceSet;
 
 
 public class Registry {
@@ -22,10 +24,15 @@ public class Registry {
 	public List<Extension> getExtensions(String extensionPoint){
 		List<Extension> extensions = extensionsMap.get(extensionPoint);
 		if (extensions == null){
-			extensions = new ArrayList<Extension>();
+			extensions = new SequenceSet<Extension>();
 			extensionsMap.put(extensionPoint,extensions);
 		}
 		return extensions;
+	}
+	
+	public void deregisterExtension(String extensionPoint, Extension extension) {
+		List<Extension> extensions = getExtensions(extensionPoint);
+		extensions.remove(extension);
 	}
 	public boolean hasExtensions(String extensionPoint){
 		return !getExtensions(extensionPoint).isEmpty();
