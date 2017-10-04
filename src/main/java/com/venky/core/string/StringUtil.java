@@ -18,6 +18,20 @@ import java.util.Stack;
  * @author venky
  */
 public class StringUtil {
+	public static String join(String...array) {
+		return join(',',array);
+	}
+	public static String join(char separator, String... array) {
+		StringBuilder b = new StringBuilder();
+		for (String v:array) { 
+			if (b.length() > 0) {
+				b.append(separator);
+			}
+			b.append(v);
+		}
+		return b.toString();
+	}
+	
     public static boolean equals(String s1, String s2){
         if (s1 == null){
             return s2 == null; 

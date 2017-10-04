@@ -38,8 +38,6 @@ public class Locker {
 	
 	public Lock getLock(String lockName,LockMode mode){
 		ReentrantReadWriteLock lockCategory = locks.get(lockName);
-		Lock lock = mode == LockMode.EXCLUSIVE ? lockCategory.writeLock() : lockCategory.readLock() ;
-		return lock;
+		return  mode == LockMode.EXCLUSIVE ? lockCategory.writeLock() : lockCategory.readLock() ;
 	}
-	
 }

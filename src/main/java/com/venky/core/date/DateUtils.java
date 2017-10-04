@@ -86,6 +86,7 @@ public class DateUtils { // NOPMD by VMahadevan on 1/26/09 11:16 PM
     public static final String ISO_DATE_TIME_FORMAT_STR = "yyyy-MM-dd HH:mm:ss";
 
     public static final String ISO_DATE_TIME_FORMAT_WITH_MILLIS_STR = "yyyy-MM-dd HH:mm:ss.SSS";
+    public static final String ISO_8601_24H_FULL_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
 
     
     public static final String APP_TIME_FORMAT_STR = "HH:mm";
@@ -165,7 +166,7 @@ public class DateUtils { // NOPMD by VMahadevan on 1/26/09 11:16 PM
     }
 
     public static Date getDate(final String dateStr) {
-    	String[] trialFormats = new String[] { APP_DATE_TIME_FORMAT_WITH_TZ_STR , APP_DATE_TIME_FORMAT_STR, ISO_DATE_TIME_FORMAT_WITH_MILLIS_STR, ISO_DATE_TIME_FORMAT_STR, APP_DATE_FORMAT_STR, ISO_DATE_FORMAT_STR };
+    	String[] trialFormats = new String[] { APP_DATE_TIME_FORMAT_WITH_TZ_STR , APP_DATE_TIME_FORMAT_STR, ISO_DATE_TIME_FORMAT_WITH_MILLIS_STR, ISO_8601_24H_FULL_FORMAT, ISO_DATE_TIME_FORMAT_STR, APP_DATE_FORMAT_STR, ISO_DATE_FORMAT_STR };
     	for (String trialFormat : trialFormats ){
     			try {
 					return getFormat(trialFormat).parse(dateStr);
@@ -239,4 +240,11 @@ public class DateUtils { // NOPMD by VMahadevan on 1/26/09 11:16 PM
         target.setTimeInMillis(cal.getTime().getTime());
         return target.getTime();
     }
+    public static String getDOW(Date date) { 
+		String[] DOW =new String[] {"SUN","MON", "TUE","WED","THU","FRI","SAT"}; 
+
+		Calendar c = Calendar.getInstance();
+		c.setTime(date);
+		return DOW[c.get(Calendar.DAY_OF_WEEK)-1];
+	}
 }

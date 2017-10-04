@@ -27,7 +27,7 @@ public class GeoCoder {
     
     private static final Map<String,GeoSP> availableSps = new HashMap<String,GeoSP>();
     static { 
-    	registerGeoSP("yahoo",new Yahoo());
+    	//registerGeoSP("yahoo",new Yahoo());
     	registerGeoSP("google",new Google());
     	registerGeoSP("openstreetmap",new Nominatim());
     }
@@ -55,7 +55,7 @@ public class GeoCoder {
     Collection<GeoSP> sps = null ;
 	public GeoLocation getLocation(String address){
     	if (preferredServiceProvider == null ){
-    		sps = Arrays.asList(availableSps.get("yahoo"),availableSps.get("google"),availableSps.get("openstreetmap"));
+    		sps = Arrays.asList(availableSps.get("google"),availableSps.get("openstreetmap"));
     	}else {
     		sps = Arrays.asList(preferredServiceProvider); 
     	}
@@ -71,7 +71,8 @@ public class GeoCoder {
     private static interface GeoSP {
     	public GeoLocation getLocation(String address);
     }
-    private static class Yahoo implements GeoSP {
+    @Deprecated
+    private static class Yahoo implements GeoSP { 
     	private static final String WSURL = "http://where.yahooapis.com/geocode?appid=vvNzzZ_V34HjikIGzQZ2Q6.ErIvyP7F7UOVVcbzmWH.2G84oCDRwE8_7cunqsBnjYY1x&q=";
 
 		@Override

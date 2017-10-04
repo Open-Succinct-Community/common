@@ -15,7 +15,7 @@ public class BetterLogger extends Logger {
 	private final Logger logger;
 
 	
-	protected BetterLogger(Logger logger) {
+	public BetterLogger(Logger logger) {
 		super(logger.getName(), logger.getResourceBundleName());
 		this.logger = logger;
 	}

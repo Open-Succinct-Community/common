@@ -5,13 +5,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.TreeMap;
 
 import com.venky.core.checkpoint.Mergeable;
+import com.venky.core.math.DoubleUtils;
 import com.venky.core.util.Bucket;
 import com.venky.core.util.ObjectUtil;
 
@@ -30,59 +31,68 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 		this(MAX_ENTRIES_DEFAULT,PRUNE_FACTOR_DEFAULT);
 	}
 	
-	private final int maxEntries ;
-	private final double pruneFactor ;
-	protected Cache(int maxEntries,double pruneFactor){
-		this.maxEntries = maxEntries;
-		this.pruneFactor = pruneFactor;
+	private int maxEntries ;
+	private double pruneFactor ;
+	private int MIN_ENTRIES_TO_EVICT ;
+	public void reconfigure(int maxEntries,double pruneFactor) {
+		this.maxEntries = maxEntries; 
+		this.pruneFactor = pruneFactor; 
 		if (this.pruneFactor > 1 || this.pruneFactor < 0 ){
 			throw new IllegalArgumentException("Prune factor must be between 0.0 than 1.0");
 		}
+		this.MIN_ENTRIES_TO_EVICT = (int) (maxEntries * pruneFactor);
+	}
+	protected Cache(int maxEntries,double pruneFactor){
+		reconfigure(maxEntries, pruneFactor);
 	}
 
 	public void makeSpace(){
-		if (maxEntries != MAX_ENTRIES_UNLIMITED && size() >= maxEntries){
-			int numEntriesToRemove = (int)(size() * pruneFactor);
-			if (numEntriesToRemove <= 0){
-				return;
-			}
-			if (pruneFactor == 1){
-				clear();
-				return;
-			}
-			SortedMap<Long,List<K>> keysAccessedByTime = new TreeMap<Long, List<K>>(); 
-			for (K key : accessTimeMap.keySet()){
-				Long time = accessTimeMap.get(key);
-				List<K> keys = keysAccessedByTime.get(time);
-				if (keys == null){
-					keys = new ArrayList<K>();
-					keysAccessedByTime.put(time, keys);
+		if (maxEntries == MAX_ENTRIES_UNLIMITED || DoubleUtils.equals(0,pruneFactor) || DoubleUtils.equals(maxEntries * pruneFactor , 0 ) || cacheMap.size() < maxEntries) {
+			return ;
+		}
+		synchronized (cacheMap) {
+			if (cacheMap.size() >= maxEntries){
+				if (pruneFactor == 1){
+					clearEntries();
+					return;
 				}
-				keys.add(key);
-			}
-			int numEntriesRemoved = 0;
-			for (Long time: keysAccessedByTime.keySet()){//We will read in the order of being Accessed.
-				for (K key : keysAccessedByTime.get(time)){
-					remove(key);
-					numEntriesRemoved ++;
+				int numEntriesToRemove = (int) (pruneFactor * cacheMap.size());
+				
+				List<K> keysToRemove = new ArrayList<>();
+				for (Long time: keysAccessedByTime.keySet()){//We will read in the order of being Accessed.
+					
+					for (K key : keysAccessedByTime.get(time)) {
+						if (isEvictable(key)) {
+							keysToRemove.add(key);
+						}
+					}
+					if (keysToRemove.size() >= numEntriesToRemove){
+						break;
+					}
 				}
-				if (numEntriesRemoved >= numEntriesToRemove){
-					break;
+				for(K k : keysToRemove) {
+					removeEntry(k);
 				}
-			}
- 		}
+	 		}
+		}
+	}
+	protected boolean isEvictable(K lruKey) {
+		return true;
 	}
 
 	@SuppressWarnings("unchecked")
 	public Cache<K,V> clone(){
 		try {
-			Cache<K,V> clone = (Cache<K,V>)super.clone();
-			clone.accessTimeMap = (HashMap<K, Long>)accessTimeMap.clone();
-			clone.cacheMap = (HashMap<K, V>)cacheMap.clone();
-			for (K k :clone.cacheMap.keySet()){
-				clone.cacheMap.put(k, ObjectUtil.clone(clone.get(k)));
+			synchronized (cacheMap) {
+				Cache<K,V> clone = (Cache<K,V>)super.clone();
+				clone.accessTimeMap = (HashMap<K, Long>)accessTimeMap.clone();
+				clone.keysAccessedByTime = (TreeMap<Long, Set<K>>) keysAccessedByTime.clone();
+				clone.cacheMap = (HashMap<K, V>)cacheMap.clone();
+				for (K k :clone.cacheMap.keySet()){
+					clone.cacheMap.put(k, ObjectUtil.clone(clone.get(k)));
+				}
+				return clone;
 			}
-			return clone;
 		} catch (CloneNotSupportedException e) {
 			throw new RuntimeException(e);
 		}
@@ -91,9 +101,15 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 	public void merge(Cache<K,V> another){
 		ObjectUtil.mergeValues(another.accessTimeMap,this.accessTimeMap);
 		ObjectUtil.mergeValues(another.cacheMap,this.cacheMap);
+		ObjectUtil.mergeValues(another.keysAccessedByTime,this.keysAccessedByTime);
 	}
 	public int size(){
-		return cacheMap.size();
+		synchronized (cacheMap) {
+			return cacheMap.size();
+		}
+	}
+	public boolean isEmpty() {
+		return size() == 0 ; 
 	}
 	
 	public Set<K> keySet(){
@@ -102,70 +118,73 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 	
 	@Override
 	public boolean containsKey(Object key){
-		return cacheMap.containsKey(key);
+		synchronized (cacheMap) {
+			return cacheMap.containsKey(key);
+		}
 	}
-	public boolean isEmpty() {
-		return cacheMap.isEmpty();
-	}
+
 	public boolean containsValue(Object value) {
-		return cacheMap.containsValue(value);
+		synchronized (cacheMap) {
+			return cacheMap.containsValue(value);
+		}
 	}
 	
-	private HashMap<K,V> cacheMap = new HashMap<K, V>();
-	private HashMap<K,Long> accessTimeMap = new HashMap<K, Long>();
 	
 	@SuppressWarnings("unchecked")
 	@Override
 	public V get(Object key){
-		V v = cacheMap.get(key);
-		if (v == null && !cacheMap.containsKey(key)){
-			synchronized (cacheMap) {
-				v = cacheMap.get(key);
-				if (v == null && !cacheMap.containsKey(key)){
-					v = getValue((K)key);
-					makeSpace();
-					cacheMap.put((K)key, v);
-				}
+		V v = null ;
+		synchronized (cacheMap) {
+			v = cacheMap.get(key);
+			if (v == null && !cacheMap.containsKey(key)){
+				v = getValue((K)key);
+				put((K)key, v);
+			}else { 
+				updateAccessTime((K)key);
 			}
 		}
-		fakeTime.increment();
-		accessTimeMap.put((K)key, fakeTime.longValue());
 		return v;
 	}
-	
-	
+
+	@SuppressWarnings("unchecked")
 	public V remove(Object key){
+		return removeEntry(key);
+	}
+	private V removeEntry(Object key){
 		V previous = null;
 		synchronized (cacheMap) {
 			previous = cacheMap.remove(key);
-			accessTimeMap.remove(key);
+			removePreviousAccessTime((K)key);
 		}
 		return previous;
 	}
 	public void clear(){
+		clearEntries();
+	}
+	private void clearEntries() { 
 		synchronized (cacheMap) {
 			cacheMap.clear();
 			accessTimeMap.clear();
+			keysAccessedByTime.clear();
 		}
 	}
 	
 	public V put(K key,V value){
 		V previous = null;
 		synchronized (cacheMap) {
+			makeSpace();
 			previous = cacheMap.put(key, value);
-			fakeTime.increment();
-			accessTimeMap.put(key, fakeTime.longValue());
+			updateAccessTime(key);
 		}
 		return previous;
 	}
 	
 	protected abstract V getValue(K k);
-	public Long accessTime(K k){
-		return accessTimeMap.get(k);
-	}
 	
 	public Collection<V> values(){
-		return cacheMap.values();
+		synchronized (cacheMap) {
+			return cacheMap.values();
+		}
 	}
 
 	@Override
@@ -177,6 +196,56 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 
 	@Override
 	public Set<java.util.Map.Entry<K, V>> entrySet() {
-		return Collections.unmodifiableSet(cacheMap.entrySet());
+		synchronized (cacheMap) {
+			return Collections.unmodifiableSet(cacheMap.entrySet());
+		}
 	}
+	
+	
+	@Override
+	public String toString() {
+		synchronized (cacheMap) {
+			return cacheMap.toString();
+		}
+	}
+	private HashMap<K,V> cacheMap = new HashMap<K, V>();
+	private HashMap<K,Long> accessTimeMap = new HashMap<K, Long>();
+	private TreeMap<Long,Set<K>> keysAccessedByTime = new TreeMap<Long, Set<K>>() ;
+	private Set<K> accessedKeys(Long epoch){ 
+		Set<K> keys = keysAccessedByTime.get(epoch);
+		if (keys == null) {
+			keys = new HashSet<>();
+			keysAccessedByTime.put(epoch, keys);
+		}
+		return keys;
+	}
+	private void removeEpoch(Long  epoch) { 
+		keysAccessedByTime.remove(epoch);
+	}
+	private Long removePreviousAccessTime(K key) { 
+		Long oldEpoch = accessTimeMap.remove(key);
+		if (oldEpoch != null) {
+			Set<K> keys = accessedKeys(oldEpoch); 
+			keys.remove(key);
+			if (keys.isEmpty()) {
+				removeEpoch(oldEpoch);
+			}
+		}
+		return oldEpoch;
+	}
+	private void createNewAccessTime(K key) { 
+		fakeTime.increment();
+		Long newEpoch = fakeTime.longValue() / Math.max(1, MIN_ENTRIES_TO_EVICT);
+		
+		accessTimeMap.put((K)key, newEpoch);
+		accessedKeys(newEpoch).add(key);
+	}
+	
+	private void updateAccessTime(K key) { 
+		removePreviousAccessTime(key);
+		createNewAccessTime(key);
+	}
+	
+	
+
 }
