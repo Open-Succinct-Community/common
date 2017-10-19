@@ -14,6 +14,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
 public class XMLDocument {
 
@@ -38,7 +39,12 @@ public class XMLDocument {
         documentRoot = createElement(rootName);
         document.appendChild(documentRoot.getInner());
     }
-    
+
+    public XMLDocument(XMLElement element){
+        document = builder.newDocument();
+        Node documentRoot = document.importNode(element.getInner(),true);
+        document.appendChild(documentRoot);
+    }
     public final XMLElement createElement(String tagName) {
         return new XMLElement(this, document.createElement(tagName));
     }
