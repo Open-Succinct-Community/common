@@ -19,6 +19,12 @@ public class ExceptionUtil {
         	if (instanceOfThisClass.isInstance(ex)){
         		ret = ex;
         	}
+        	if (ex instanceof MultiException){
+                Throwable tmp = ((MultiException)ex).getContainedException(instanceOfThisClass);
+                if (tmp != null){
+                    ret = tmp;
+                }
+            }
         	ex = ex.getCause();
         }
         return ret;

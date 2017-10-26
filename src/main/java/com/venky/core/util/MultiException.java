@@ -19,8 +19,11 @@ public class MultiException extends RuntimeException{
 	public MultiException(){
 		super();
 	}
-	
-	public Throwable getContainedException(Class<?> instanceOfThisClass){
+    public synchronized Throwable getCause() {
+        return throwables.isEmpty()? this : throwables.get(0);
+    }
+
+    public Throwable getContainedException(Class<?> instanceOfThisClass){
 		if (instanceOfThisClass.isInstance(this)){
 			return this;
 		}
