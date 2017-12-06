@@ -137,7 +137,7 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 		V v = null;
 		if (position != null) {
 			KryoStore cacheStore = getCacheStore();
-			cacheStore.setReaderPosition(position);
+			cacheStore.position(position);
 			K k = cacheStore.read();
 			V pv = cacheStore.read();
 			if (k.equals(key)) {
@@ -183,8 +183,8 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 		KryoStore indexStore = getIndexStore(); 
 		KryoStore cacheStore = getCacheStore();
 		
-		long iPos = indexStore.getWriterPosition();
-		long cPos = cacheStore.getWriterPosition(); 
+		long iPos = indexStore.position();
+		long cPos = cacheStore.position();
 		MultiException mex = new MultiException("Cache could not be persisted!");
 		try {
 			if (indexMap.containsKey(k) && indexMap.get(k) > 0) {
@@ -201,8 +201,8 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 		} catch (KryoException e) {
 			mex.add(e);
 			try { 
-				indexStore.setWriterPosition(iPos);
-				cacheStore.setWriterPosition(cPos);
+				indexStore.position(iPos);
+				cacheStore.position(cPos);
 				indexStore.truncate(iPos);
 				cacheStore.truncate(cPos);
 			}catch(KryoException ke) {
@@ -276,7 +276,7 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 			v = getValue(key);
 		}else {
 			KryoStore cacheStore = getCacheStore();
-			cacheStore.setReaderPosition(position);
+			cacheStore.position(position);
 			K k = cacheStore.read();
 			V pv = cacheStore.read();
 			if (k.equals(key)) {
@@ -352,7 +352,7 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 		KryoStore newIndexStore = new KryoStore(getTempIndexDB());
 		
 		indexMap.forEach((k,p) -> {
-			oldStore.setReaderPosition(p);
+			oldStore.position(p);
 			K pk  = oldStore.read();
 			V v  = oldStore.read();
 			if (k.equals(pk)) {
@@ -360,7 +360,7 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 				newStore.write(v);
 				newStore.flush(); 
 				newIndexStore.write(k);
-				newIndexStore.write(new Long(newStore.getWriterPosition()));
+				newIndexStore.write(new Long(newStore.position()));
 				newIndexStore.flush();
 			}
 		});

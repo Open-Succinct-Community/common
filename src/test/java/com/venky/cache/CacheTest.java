@@ -102,7 +102,7 @@ public class CacheTest {
 		KryoStore store = new KryoStore("target/cache/hw");
 		store.write(s);
 		store.flush();
-		store.setReaderPosition(0);
+		store.position(0);
 		List<String> ps = store.read();
 		
 		assertEquals("Persisted Proxy Problem" , ps, s);

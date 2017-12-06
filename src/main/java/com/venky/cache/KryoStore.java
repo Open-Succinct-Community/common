@@ -1,10 +1,6 @@
 package com.venky.cache;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.InvocationHandler;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -20,19 +16,29 @@ import de.javakaffee.kryoserializers.JdkProxySerializer;
 
 public  class KryoStore { 
 	File fileStore ; 
-	FileInputStream in; 
-	FileOutputStream out; 
+	ChannelInputStream in;
+	ChannelOutputStream out;
 	Kryo kryo ;
 	Input ki; 
-	Output ko; 
+	Output ko;
+	private void ensureDir(File directory){
+        directory.mkdirs();
+        if (!directory.exists()) {
+            throw new RuntimeException("Unable to create directory " + directory );
+        }else if (!directory.isDirectory()) {
+            throw new RuntimeException(directory + " is not a directory!");
+        }
+    }
 	public KryoStore(String storePath) {
 		this(new File(storePath));
 	}
-	public KryoStore(File store) {
+    public KryoStore(File store) {
+        ensureDir(store.getParentFile());
 		fileStore = store;
 		try {
-			out = new FileOutputStream(fileStore,true);
-			in = new FileInputStream(fileStore);
+            RandomAccessFile raf = new RandomAccessFile(fileStore,"rws");
+            out = new ChannelOutputStream(raf);
+			in = new ChannelInputStream(raf);
 			kryo = createCryo();
 			ki = new Input(in);
 			ko = new Output(out);
@@ -42,42 +48,34 @@ public  class KryoStore {
 		
 	}
 	public void flush() {
+        ko.flush();
+        try {
+            out.flush();
+        } catch (IOException e) {
+            throw new KryoException(e);
+        }
+    }
+	public boolean eof() {
+	    try {
+            return (in.eof() && ki.available() <= 0);
+        }catch (IOException e){
+	        if (e instanceof  EOFException){
+	            return true;
+            }
+            throw new RuntimeException(e);
+        }
+	}
+	public long position() {
 		try {
-			ko.flush();
-			out.flush();
+			return in.position() - ki.available();
 		} catch (IOException e) {
 			throw new KryoException(e); //Soften the exception.
 		}
 	}
-	public boolean eof() { 
-		return ki.eof();
-	}
-	public long getReaderPosition() { 
+	public void position(long offset){
 		try {
-			return in.getChannel().position();
-		} catch (IOException e) {
-			throw new KryoException(e); //Soften the exception.
-		}
-	}
-	public long getWriterPosition() { 
-		try {
-			return out.getChannel().position();
-		} catch (IOException e) {
-			throw new KryoException(e); //Soften the exception.
-		}
-	}
-
-	public void setReaderPosition(long offset){ 
-		try {
-			in.getChannel().position(offset);
+			in.position(offset);
 			ki = new Input(in);
-		} catch (IOException e) {
-			throw new KryoException(e); //Soften the exception.
-		}
-	}
-	public void setWriterPosition(long offset)  { 
-		try {
-			out.getChannel().position(offset);
 			ko = new Output(out);
 		} catch (IOException e) {
 			throw new KryoException(e); //Soften the exception.
@@ -93,9 +91,7 @@ public  class KryoStore {
 	
 	public void truncate(long size) { 
 		try {
-			out.getChannel().truncate(size);
-			in.getChannel().position(Math.min(in.getChannel().position(), size));
-			
+			out.truncate(size);
 		} catch (IOException e) {
 			throw new KryoException(e); //Soften the exception.
 		}
@@ -118,11 +114,5 @@ public  class KryoStore {
 		close();
 		fileStore.delete();
 	}
-	
-	private ReentrantReadWriteLock storeLock = new ReentrantReadWriteLock();
-	public Lock lock() { 
-		Lock lock =  storeLock.writeLock();
-		lock.lock();
-		return lock;
-	}
+
 }
