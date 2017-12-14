@@ -7,32 +7,19 @@ import java.nio.channels.Channel;
 import java.nio.channels.SeekableByteChannel;
 
 public class ChannelOutputStream extends OutputStream {
-    RandomAccessFile randomAccessFile = null;
-    public ChannelOutputStream(RandomAccessFile raf) {
-        this.randomAccessFile = raf;
+    Store store = null;
+    public ChannelOutputStream(Store store) {
+        this.store = store;
     }
 
     @Override
     public void write(int b) throws IOException {
-        randomAccessFile.write(b);
+        store.write(b);
     }
-    public void write(byte b[], int off, int len) throws IOException {
-        randomAccessFile.write(b,off,len);
-    }
-    public void position(long position) throws IOException {
-        randomAccessFile.seek(position);
-    }
-    public long position() throws IOException {
-        return randomAccessFile.getFilePointer();
-    }
-
-    public void truncate(long size) throws IOException {
-        randomAccessFile.setLength(size);
-    }
-
     @Override
-    public void close() throws IOException {
-        randomAccessFile.close();
+    public void write(byte b[], int off, int len) throws IOException {
+        store.write(b,off,len);
     }
+
 
 }

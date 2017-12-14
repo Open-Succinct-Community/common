@@ -2,8 +2,7 @@ package com.venky.cache;
 
 import java.io.*;
 import java.lang.reflect.InvocationHandler;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.nio.channels.FileLock;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.KryoException;
@@ -15,9 +14,7 @@ import de.javakaffee.kryoserializers.JdkProxySerializer;
 
 
 public  class KryoStore { 
-	File fileStore ; 
-	ChannelInputStream in;
-	ChannelOutputStream out;
+	Store fileStore ;
 	Kryo kryo ;
 	Input ki; 
 	Output ko;
@@ -34,14 +31,11 @@ public  class KryoStore {
 	}
     public KryoStore(File store) {
         ensureDir(store.getParentFile());
-		fileStore = store;
 		try {
-            RandomAccessFile raf = new RandomAccessFile(fileStore,"rws");
-            out = new ChannelOutputStream(raf);
-			in = new ChannelInputStream(raf);
+            fileStore = new Store(store,"rws");
 			kryo = createCryo();
-			ki = new Input(in);
-			ko = new Output(out);
+			ki = new Input(fileStore.getInputStream());
+			ko = new Output(fileStore.getOutputStream());
 		} catch (FileNotFoundException e) {
 			throw new KryoException(e); //Soften the exception.
 		}
@@ -49,15 +43,10 @@ public  class KryoStore {
 	}
 	public void flush() {
         ko.flush();
-        try {
-            out.flush();
-        } catch (IOException e) {
-            throw new KryoException(e);
-        }
     }
 	public boolean eof() {
 	    try {
-            return (in.eof() && ki.available() <= 0);
+            return (fileStore.getInputStream().available() <=0 && ki.available() <= 0);
         }catch (IOException e){
 	        if (e instanceof  EOFException){
 	            return true;
@@ -67,16 +56,16 @@ public  class KryoStore {
 	}
 	public long position() {
 		try {
-			return in.position() - ki.available();
+			return fileStore.position() - ( ki.limit() - ki.position());
 		} catch (IOException e) {
 			throw new KryoException(e); //Soften the exception.
 		}
 	}
 	public void position(long offset){
 		try {
-			in.position(offset);
-			ki = new Input(in);
-			ko = new Output(out);
+			fileStore.position(offset);
+			ki = new Input(fileStore.getInputStream());
+			ko = new Output(fileStore.getOutputStream());
 		} catch (IOException e) {
 			throw new KryoException(e); //Soften the exception.
 		}
@@ -91,7 +80,7 @@ public  class KryoStore {
 	
 	public void truncate(long size) { 
 		try {
-			out.truncate(size);
+			fileStore.truncate(size);
 		} catch (IOException e) {
 			throw new KryoException(e); //Soften the exception.
 		}
@@ -106,13 +95,36 @@ public  class KryoStore {
 		return kryo;
 	}
 
-	public void close() { 
+	public void close(){
 		ki.close();
 		ko.close();
-	}
-	public void delete()  {
+        try {
+            fileStore.close();
+        } catch (IOException e) {
+            throw new KryoException(e);
+        }
+    }
+	public void delete() {
 		close();
-		fileStore.delete();
-	}
+        try {
+            fileStore.delete();
+        } catch (IOException e) {
+            throw new KryoException(e);
+        }
+    }
 
+	public long size(){
+        try {
+            return fileStore.size();
+        } catch (IOException e) {
+            throw new KryoException(e);
+        }
+    }
+    public FileLock lock() {
+        try {
+            return fileStore.lock();
+        } catch (IOException e) {
+            throw new KryoException(e);
+        }
+    }
 }

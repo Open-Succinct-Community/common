@@ -6,30 +6,22 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 
 public class ChannelInputStream extends InputStream {
-    RandomAccessFile randomAccessFile = null;
-    public ChannelInputStream(RandomAccessFile raf) {
-        this.randomAccessFile = raf;
-    }
-
-
-
-    public void position(long position) throws IOException {
-        randomAccessFile.seek(position);
-    }
-    public long position() throws IOException {
-        return randomAccessFile.getFilePointer();
-    }
-
-    public void truncate(long size) throws IOException {
-        randomAccessFile.setLength(size);
+    Store store = null;
+    public ChannelInputStream(Store store) {
+        this.store = store;
     }
 
     @Override
     public int read() throws IOException {
-        return randomAccessFile.read();
+        return store.read();
     }
-
-    public boolean eof() throws IOException {
-        return randomAccessFile.getFilePointer() < 0 || randomAccessFile.getFilePointer() >= randomAccessFile.length() ;
+    @Override
+    public int read(byte b[], int off, int len) throws IOException {
+        return store.read(b,off,len);
+    }
+    @Override
+    public int available() throws IOException {
+        long available = store.size() - store.position();
+        return (int)(available > 0 ? available : 0);
     }
 }
