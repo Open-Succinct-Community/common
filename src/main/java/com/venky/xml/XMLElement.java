@@ -4,6 +4,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Iterator;
 
+import org.w3c.dom.CharacterData;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -145,4 +146,16 @@ public class XMLElement extends XMLNode {
         this.appendChild(elem);
         return elem;
     }
+
+    public String getCharacterData() {
+        NodeList nl = inner.getChildNodes()    ;
+        for (int i = 0; i < nl.getLength() ; i++){
+            if (nl.item(i).getNodeType() == Node.CDATA_SECTION_NODE){
+                CharacterData cd = (CharacterData) nl.item(i);
+                return cd.getData();
+            }
+        }
+        return null;
+    }
+
 }

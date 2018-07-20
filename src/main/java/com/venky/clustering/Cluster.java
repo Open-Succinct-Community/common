@@ -1,8 +1,6 @@
 package com.venky.clustering;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.venky.core.string.StringUtil;
@@ -39,9 +37,8 @@ public class Cluster<T> {
 	}
 	
 	
-	private List<T> points = new ArrayList<T>();
 	public void addPoint(T t){
-		points.add(t);
+		getPoints().add(t);
 		if (centerFinder != null){
 			centroid = centerFinder.center(t);
 		}
@@ -66,7 +63,7 @@ public class Cluster<T> {
 		
 		distance.minDistance = Double.POSITIVE_INFINITY; 
 		distance.maxDistance = Double.NEGATIVE_INFINITY;
-		for (T p: points){
+		for (T p: getPoints()){
 			double d = metric.distance(p, point);
 			if (d < distance.minDistance){
 				distance.minDistance = d;
@@ -77,7 +74,8 @@ public class Cluster<T> {
 		}
 		return distance;
 	}
-	public List<T> getPoints(){
+    private List<T> points = new ArrayList<T>();
+    public List<T> getPoints(){
 		return points;
 	}
 	public Distance distance(Cluster<T> cluster){
@@ -86,7 +84,7 @@ public class Cluster<T> {
 		distance.minDistance = Double.POSITIVE_INFINITY; 
 		distance.maxDistance = Double.NEGATIVE_INFINITY;
 		
-		for (Iterator<T> i = points.iterator() ; i.hasNext() && distance.maxDistance < Double.POSITIVE_INFINITY ; ){
+		for (Iterator<T> i = getPoints().iterator() ; i.hasNext() && distance.maxDistance < Double.POSITIVE_INFINITY ; ){
 			T aPointInThisCluster = i.next();
 			for (Iterator<T> otherClusterPointIterator = cluster.getPoints().iterator(); otherClusterPointIterator.hasNext() && distance.maxDistance < Double.POSITIVE_INFINITY ; ){
 				T aPointInOtherCluster = otherClusterPointIterator.next();
@@ -102,12 +100,26 @@ public class Cluster<T> {
 		
 		return distance;
 	}
+
+	public void addAll(Cluster<T> cluster){
+        for (T p : cluster.getPoints()){
+            addPoint(p);
+        }
+    }
 	
 	public static class Distance {
 		private double distanceFromCentroid; 
 		private double minDistance; 
 		private double maxDistance;
-		
+		public Distance(){
+
+        }
+        public Distance(double minDistance, double maxDistance, double distanceFromCentroid){
+		    this.maxDistance = maxDistance;
+		    this.minDistance = minDistance ;
+		    this.distanceFromCentroid = distanceFromCentroid;
+        }
+
 		public double getDistanceFromCentroid() {
 			return this.distanceFromCentroid;
 		}

@@ -36,8 +36,12 @@ public class SequenceSet<E> implements Set<E> , Cloneable, List<E>{
 	}
 	
 	public E first(){
-		return list.get(0);
+		return get(0);
 	}
+
+	public E last() {
+	    return get(size()-1);
+    }
 	
 	public int indexOf(Object o){
 		return list.indexOf(o);

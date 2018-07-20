@@ -9,6 +9,7 @@ import java.util.Map;
 public class Clusterer<T> {
     private Metric<T> metric;
     private CenterFinderBuilder<T> centerFinderBuilder ;
+    private ClusterBuilder<T> clusterBuilder ;
     
     private static class DefaultCenterFinderBuilder<T> implements CenterFinderBuilder<T> {
 	    private CenterFinder<T> centerFinder;
@@ -21,11 +22,27 @@ public class Clusterer<T> {
 		}
     	
     }
+
+
     public Clusterer(CenterFinderBuilder<T> cf, Metric<T> m){
-    	this.centerFinderBuilder = cf;
-    	this.metric = m;
+        this (null,cf,m);
     }
-    
+    public Clusterer(ClusterBuilder<T> clusterBuilder, CenterFinderBuilder<T> cf, Metric<T> m){
+        this.centerFinderBuilder = cf;
+        this.metric = m;
+        if (clusterBuilder == null){
+            this.clusterBuilder = new ClusterBuilder<T>() {
+                @Override
+                public Cluster<T> init(CenterFinderBuilder<T> cf, Metric<T> m) {
+                    return new Cluster<>(cf,m);
+                }
+            };
+        }else {
+            this.clusterBuilder = clusterBuilder;
+        }
+
+    }
+
     public Clusterer(CenterFinder<T> cf, Metric<T> m){
     	this(new DefaultCenterFinderBuilder<T>(cf),m);
     }
@@ -40,7 +57,7 @@ public class Clusterer<T> {
     public List<Cluster<T>> cluster(Collection<T> points, List<T> centroids){
         List<Cluster<T>> clusters = new ArrayList<Cluster<T>>();
         for (T centroid: centroids){
-            Cluster<T> init = new Cluster<T>(centerFinderBuilder,metric);
+            Cluster<T> init = clusterBuilder.init(centerFinderBuilder,metric);
             init.addPoint(centroid);
             clusters.add(init);
         }
@@ -70,7 +87,7 @@ public class Clusterer<T> {
     public List<Cluster<T>> cluster(Collection<T> points,StopCriteria<T> stopCriteria){
         List<Cluster<T>> clusters = new ArrayList<Cluster<T>>();
         for (T point: points){
-            Cluster<T> init = new Cluster<T>(centerFinderBuilder,metric);
+            Cluster<T> init = clusterBuilder.init(centerFinderBuilder,metric);
             init.addPoint(point);
             clusters.add(init);
         }
@@ -115,9 +132,7 @@ public class Clusterer<T> {
             
             clusterGrown = clusters.get(indexGrown);
             clusterDestroyed = clusters.remove(indexDestroyed); //Note index Destroyed >= indexGrown.
-            for (T p : clusterDestroyed.getPoints()){
-                clusterGrown.addPoint(p);
-            }
+            clusterGrown.addAll(clusterDestroyed);
             distances.remove(clusterGrown);
             distances.remove(clusterDestroyed);
             for (Cluster<T> remaining: distances.keySet()){
