@@ -114,7 +114,7 @@ public class Clusterer<T> {
                         if (inspected.centroid() != null){
                             distance = inspected.centroidDistance(other);
                         }else {
-                            distance = inspected.distance(other).getMaxDistance();
+                            distance = inspected.distance(other).getMinDistance();
                         }
                         inspectedDistances.put(other, distance);
                     }

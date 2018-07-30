@@ -231,8 +231,8 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 
 					@Override
 					public Entry<K, V> next() {
-						K key = keys.next();
-						V v = get(key);
+						final K key = keys.next();
+						final V v = get(key);
 						return new Entry<K, V>() {
 
 							@Override
@@ -351,19 +351,21 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 		KryoStore newStore = new KryoStore(getTempCacheDB());
 		KryoStore newIndexStore = new KryoStore(getTempIndexDB());
 		
-		indexMap.forEach((k,p) -> {
+		for (Map.Entry<K,Long> entry : indexMap.entrySet() ){
+			K k= entry.getKey();
+			Long p= entry.getValue();
 			oldStore.position(p);
 			K pk  = oldStore.read();
 			V v  = oldStore.read();
 			if (k.equals(pk)) {
 				newStore.write(k);
 				newStore.write(v);
-				newStore.flush(); 
+				newStore.flush();
 				newIndexStore.write(k);
 				newIndexStore.write(new Long(newStore.position()));
 				newIndexStore.flush();
 			}
-		});
+		};
 		oldStore.close();
 		oldIndexStore.close();
 		newStore.close();
@@ -375,10 +377,12 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 	}
 	protected synchronized void compactIndex() { 
 		KryoStore indexStore = new KryoStore(getTempIndexDB());
-		indexMap.forEach((k,p)->{
+		for( Map.Entry<K,Long> entry : indexMap.entrySet() ) {
+			K k  = entry.getKey();
+			Long p = entry.getValue();
 			indexStore.write(k); 
 			indexStore.write(p);
-		});
+		};
 		indexStore.close();
 		move(getTempIndexDB(),getIndexDB());
 		this.indexStore = null;

@@ -154,7 +154,7 @@ public class SequenceMap<K,V> implements Map<K, V> {
 
 					@Override
 					public Entry<K, V> next() {
-						K k = ki.next(); 
+						final K k = ki.next();
 						return new Map.Entry<K, V>() {
 							
 							@Override
