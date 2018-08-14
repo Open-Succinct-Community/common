@@ -146,7 +146,7 @@ public abstract class FileCache<T> {
 			}
 		}
 	}
-	protected boolean isCachingComplete(){
+	public boolean isCachingComplete(){
 		File workFile = getCacheFile(CacheMode.WORK);
 		File readFile = getCacheFile(CacheMode.READ);
 		if (!readFile.equals(workFile)){

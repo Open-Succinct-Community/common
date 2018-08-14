@@ -52,20 +52,20 @@ public class MultiException extends RuntimeException{
 	public boolean isEmpty(){
 		return throwables.isEmpty();
 	}
-	
-	private String newLine(){
-		return (System.getProperty("line.separator") + "<br/>");
-	}
+
+	public static final String  SEPARATOR = " @ ";
+
 	public String getMessage() {
 		StringBuilder b = new StringBuilder();
 		if (!ObjectUtil.isVoid(super.getMessage())){
 			b.append(super.getMessage());
-			b.append(newLine());
 		}
 		for (Throwable th: throwables){
+		    if (b.length() > 0) {
+                b.append(SEPARATOR);
+            }
 			if (!ObjectUtil.isVoid(th.getMessage())){
 				b.append(th.getMessage());
-				b.append(newLine());
 			}
 		}
 		return b.toString();

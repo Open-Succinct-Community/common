@@ -21,20 +21,22 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 	public PersistentCache() {
 		this(Cache.MAX_ENTRIES_DEFAULT,Cache.PRUNE_FACTOR_DEFAULT);
 	}
-	public PersistentCache(int maxEntries,double pruneFactor) { 
+	public PersistentCache(int maxEntries,double pruneFactor) {
 		super(maxEntries,pruneFactor);
-		loadIndex();
 	}
-	
-	public int size() { 
+
+	public int size() {
+		ensureOpen();
 		return indexMap.size();
 	}
 
-	public boolean containsKey(Object key) { 
+	public boolean containsKey(Object key) {
+		ensureOpen();
 		return indexMap.containsKey(key);
 	}
 	@Override
 	public boolean containsValue(Object value) {
+		ensureOpen();
 		for (K k : keySet()) {
 			if (get(k).equals(value)) { 
 				return true;
@@ -43,7 +45,8 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 		return false;
 	}
 	@Override
-	public Set<K> keySet(){ 
+	public Set<K> keySet(){
+		ensureOpen();
 		return new AbstractSet<K>() {
 			
 			
@@ -75,6 +78,7 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 	}
 	@Override 
 	public Set<V> values(){
+		ensureOpen();
 		Set<V> set = new AbstractSet<V>() {
 			
 			@Override
@@ -106,6 +110,7 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 	@SuppressWarnings("unchecked")
 	@Override
 	public V get(Object key){
+		ensureOpen();
 		V v = null;
 		if (super.containsKey(key)) {
 			v = super.get(key);
@@ -122,7 +127,8 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 		return v;
 	}
 	
-	public V put(K key,V value){ 
+	public V put(K key,V value){
+		ensureOpen();
 		V ret = super.put(key,value);
 		if (autoPersist()) {
 			persist(key,value);
@@ -132,19 +138,22 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 		return ret;
 	}
 	
-	public synchronized V remove(Object key){
+	public V remove(Object key){
+		ensureOpen();
 		Long position = indexMap.get(key);
 		V v = null;
 		if (position != null) {
-			KryoStore cacheStore = getCacheStore();
-			cacheStore.position(position);
-			K k = cacheStore.read();
-			V pv = cacheStore.read();
-			if (k.equals(key)) {
-				indexMap.remove(key);//Will need to repersist.
-				v = pv;
+			synchronized ( this ){
+				KryoStore cacheStore = getCacheStore();
+				cacheStore.position(position);
+				K k = cacheStore.read();
+				V pv = cacheStore.read();
+				if (k.equals(key)) {
+					indexMap.remove(key);//Will need to repersist.
+					v = pv;
+				}
+				compactIndex();
 			}
-			compactIndex();
 		}
 		return v;
 
@@ -153,71 +162,77 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 	
 	private KryoStore indexStore = null ; 
 	private KryoStore cacheStore = null ;
-	private KryoStore getIndexStore() { 
-		if (indexStore == null ) { 
-			indexStore = new KryoStore(getIndexDB());
+	private KryoStore getIndexStore() {
+		synchronized (this){
+			if (indexStore == null ) {
+				indexStore = new KryoStore(getIndexDB());
+			}
 		}
 		return indexStore;
 	}
-	private KryoStore getCacheStore() { 
-		if (cacheStore == null) {
-			cacheStore  = new KryoStore(getCacheDB());
+	private KryoStore getCacheStore() {
+		synchronized (this){
+			if (cacheStore == null) {
+				cacheStore  = new KryoStore(getCacheDB());
+			}
 		}
 		return cacheStore;
 	}
 	
-	private Map<K,Long> indexMap = new HashMap<>();
-	
-	
-	protected synchronized void loadIndex() {
-		KryoStore indexStore = getIndexStore();
-		while (! indexStore.eof() ) {
-			K k = indexStore.read();
-			Long v  = indexStore.read();
-			indexMap.put(k,v);
-		}
+	private Map<K,Long> indexMap = null;
+
+
+
+	public void persist(K k, V v) {
+		persist(k,v,true);
 	}
-	
-	
-	public synchronized void persist(K k, V v) { 
-		KryoStore indexStore = getIndexStore(); 
-		KryoStore cacheStore = getCacheStore();
-		
-		long iPos = indexStore.position();
-		long cPos = cacheStore.position();
-		MultiException mex = new MultiException("Cache could not be persisted!");
-		try {
-			if (indexMap.containsKey(k) && indexMap.get(k) > 0) {
-				return;
-			} 
-			indexStore.write(k);
-			indexStore.write(new Long(cPos));
-			indexStore.flush();
-			
-			cacheStore.write(k);
-			cacheStore.write(v);
-			cacheStore.flush(); 
-			indexMap.put(k, cPos);
-		} catch (KryoException e) {
-			mex.add(e);
-			try { 
-				indexStore.position(iPos);
-				cacheStore.position(cPos);
-				indexStore.truncate(iPos);
-				cacheStore.truncate(cPos);
-			}catch(KryoException ke) {
-				mex.add(ke);
-				//Cache is corrupt. 
-				indexStore.delete();
-				cacheStore.delete();
-				this.indexStore = null; 
-				this.cacheStore = null;
+	public void persist(K k, V v,boolean flush) {
+		ensureOpen();
+		synchronized (this){
+			KryoStore indexStore = getIndexStore();
+			KryoStore cacheStore = getCacheStore();
+
+			long iPos = indexStore.position();
+			long cPos = cacheStore.position();
+			MultiException mex = new MultiException("Cache could not be persisted!");
+			try {
+				if (indexMap.containsKey(k) && indexMap.get(k) > 0) {
+					return;
+				}
+				indexStore.write(k);
+				indexStore.write(new Long(cPos));
+				if (flush) {
+					indexStore.flush();
+				}
+
+				cacheStore.write(k);
+				cacheStore.write(v);
+				if (flush) {
+					cacheStore.flush();
+				}
+				indexMap.put(k, cPos);
+			} catch (KryoException e) {
+				mex.add(e);
+				try {
+					indexStore.position(iPos);
+					cacheStore.position(cPos);
+					indexStore.truncate(iPos);
+					cacheStore.truncate(cPos);
+				}catch(KryoException ke) {
+					mex.add(ke);
+					//Cache is corrupt.
+					indexStore.delete();
+					cacheStore.delete();
+					this.indexStore = null;
+					this.cacheStore = null;
+				}
+				throw mex;
 			}
-			throw mex;
 		}
 	}
 	@Override
 	public Set<java.util.Map.Entry<K, V>> entrySet() {
+		ensureOpen();
 		return new AbstractSet<Map.Entry<K,V>>() {
 			@Override
 			public Iterator<Entry<K, V>> iterator() {
@@ -275,20 +290,43 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 		if (position == null) { 
 			v = getValue(key);
 		}else {
-			KryoStore cacheStore = getCacheStore();
-			cacheStore.position(position);
-			K k = cacheStore.read();
-			V pv = cacheStore.read();
-			if (k.equals(key)) {
-				v = pv;
-			}else { 
+			synchronized (this) {
+				KryoStore cacheStore = getCacheStore();
+				cacheStore.position(position);
+				K k = cacheStore.read();
+				V pv = cacheStore.read();
+				if (k.equals(key)) {
+					v = pv;
+				}
+			}
+			if (v == null){
 				indexMap.remove(key);//Will need to repersist.
 				v = getValue(key);
 			}
 		}
 		return v;
 	}
-	public  void close() { 
+	private void ensureOpen(){
+		if (indexMap != null){
+			return;
+		}
+		synchronized (this){
+			if (indexMap != null){
+				return;
+			}
+			Map<K,Long> tmp = new HashMap<>();
+			KryoStore indexStore = getIndexStore();
+			while (! indexStore.eof() ) {
+				K k = indexStore.read();
+				Long v  = indexStore.read();
+				tmp.put(k,v);
+			}
+			indexMap = tmp;
+		}
+	}
+	public  void close() {
+		clear();
+		indexMap.clear();
 		getIndexStore().close();
 		getCacheStore().close();
 		this.cacheStore = null ; 
@@ -326,7 +364,6 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 		}
 	}
 	
-	protected abstract Logger getLogger() ;
 	protected abstract String getCacheDirectoryName();
 	@Override
 	protected abstract V getValue(K key) ; 
@@ -338,8 +375,13 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 
 	public void persist() {
 		for (K k : keySet()) {
-			persist(k,get(k));
+			persist(k,get(k),false);
 		}
+		flush();
+	}
+	private void flush(){
+		getIndexStore().flush();
+		getCacheStore().flush();
 	}
 	public void persist(K k) { 
 		persist(k,get(k));

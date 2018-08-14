@@ -122,10 +122,6 @@ public class CacheTest {
 			return r.nextInt();
 		}
 		@Override
-		public Logger getLogger() {
-			return Logger.getGlobal();
-		}
-		@Override
 		protected String getCacheDirectoryName() {
 			return "target/cache/random";
 		}

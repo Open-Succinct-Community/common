@@ -4,6 +4,7 @@
  */
 package com.venky.network;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -16,7 +17,7 @@ public class Node {
     public Node(){
     }
 
-    private Map<String,Object> attributes; 
+    private Map<String,Object> attributes  = new HashMap<>();
     
     public final <V> void setAttribute(String name, V value){
         attributes.put(name, value);

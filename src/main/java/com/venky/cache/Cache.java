@@ -41,6 +41,7 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 			throw new IllegalArgumentException("Prune factor must be between 0.0 than 1.0");
 		}
 		this.MIN_ENTRIES_TO_EVICT = (int) (maxEntries * pruneFactor);
+		makeSpace();
 	}
 	protected Cache(int maxEntries,double pruneFactor){
 		reconfigure(maxEntries, pruneFactor);
@@ -50,7 +51,7 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 		if (maxEntries == MAX_ENTRIES_UNLIMITED || DoubleUtils.equals(0,pruneFactor) || DoubleUtils.equals(maxEntries * pruneFactor , 0 ) || cacheMap.size() < maxEntries) {
 			return ;
 		}
-		synchronized (cacheMap) {
+		synchronized (this) {
 			if (cacheMap.size() >= maxEntries){
 				if (pruneFactor == 1){
 					clearEntries();
@@ -83,7 +84,7 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 	@SuppressWarnings("unchecked")
 	public Cache<K,V> clone(){
 		try {
-			synchronized (cacheMap) {
+			synchronized (this) {
 				Cache<K,V> clone = (Cache<K,V>)super.clone();
 				clone.accessTimeMap = (HashMap<K, Long>)accessTimeMap.clone();
 				clone.keysAccessedByTime = (TreeMap<Long, Set<K>>) keysAccessedByTime.clone();
@@ -104,7 +105,7 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 		ObjectUtil.mergeValues(another.keysAccessedByTime,this.keysAccessedByTime);
 	}
 	public int size(){
-		synchronized (cacheMap) {
+		synchronized (this) {
 			return cacheMap.size();
 		}
 	}
@@ -118,13 +119,13 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 	
 	@Override
 	public boolean containsKey(Object key){
-		synchronized (cacheMap) {
+		synchronized (this) {
 			return cacheMap.containsKey(key);
 		}
 	}
 
 	public boolean containsValue(Object value) {
-		synchronized (cacheMap) {
+		synchronized (this) {
 			return cacheMap.containsValue(value);
 		}
 	}
@@ -134,7 +135,7 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 	@Override
 	public V get(Object key){
 		V v = null ;
-		synchronized (cacheMap) {
+		synchronized (this) {
 			v = cacheMap.get(key);
 			if (v == null && !cacheMap.containsKey(key)){
 				v = getValue((K)key);
@@ -152,7 +153,7 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 	}
 	private V removeEntry(Object key){
 		V previous = null;
-		synchronized (cacheMap) {
+		synchronized (this) {
 			previous = cacheMap.remove(key);
 			removePreviousAccessTime((K)key);
 		}
@@ -162,7 +163,7 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 		clearEntries();
 	}
 	private void clearEntries() { 
-		synchronized (cacheMap) {
+		synchronized (this) {
 			cacheMap.clear();
 			accessTimeMap.clear();
 			keysAccessedByTime.clear();
@@ -171,7 +172,7 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 	
 	public V put(K key,V value){
 		V previous = null;
-		synchronized (cacheMap) {
+		synchronized (this) {
 			makeSpace();
 			previous = cacheMap.put(key, value);
 			updateAccessTime(key);
@@ -182,7 +183,7 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 	protected abstract V getValue(K k);
 	
 	public Collection<V> values(){
-		synchronized (cacheMap) {
+		synchronized (this) {
 			return cacheMap.values();
 		}
 	}
@@ -196,7 +197,7 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 
 	@Override
 	public Set<java.util.Map.Entry<K, V>> entrySet() {
-		synchronized (cacheMap) {
+		synchronized (this) {
 			return Collections.unmodifiableSet(cacheMap.entrySet());
 		}
 	}
@@ -204,7 +205,7 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 	
 	@Override
 	public String toString() {
-		synchronized (cacheMap) {
+		synchronized (this) {
 			return cacheMap.toString();
 		}
 	}
