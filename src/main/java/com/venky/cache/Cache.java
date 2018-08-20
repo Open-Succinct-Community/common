@@ -57,8 +57,9 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 					clearEntries();
 					return;
 				}
-				int numEntriesToRemove = (int) (pruneFactor * cacheMap.size());
-				
+				int numEntriesToRemove = cacheMap.size() - maxEntries  + (int)(pruneFactor * maxEntries) ;
+
+
 				List<K> keysToRemove = new ArrayList<>();
 				for (Long time: keysAccessedByTime.keySet()){//We will read in the order of being Accessed.
 					
@@ -71,12 +72,20 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 						break;
 					}
 				}
-				for(K k : keysToRemove) {
-					removeEntry(k);
-				}
+				evictKeys(keysToRemove);
 	 		}
 		}
 	}
+
+	protected void evictKeys(List<K> keysToRemove) {
+		for(K k : keysToRemove) {
+			evictKey(k);
+		}
+	}
+	protected V evictKey(K key){
+		return removeEntry(key);
+	}
+
 	protected boolean isEvictable(K lruKey) {
 		return true;
 	}

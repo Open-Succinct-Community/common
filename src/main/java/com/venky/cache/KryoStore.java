@@ -54,7 +54,14 @@ public  class KryoStore {
             throw new RuntimeException(e);
         }
 	}
-	public long position() {
+	public long getWriterPosition() {
+		try {
+			return fileStore.position() + ( ko.position() );
+		} catch (IOException e) {
+			throw new KryoException(e); //Soften the exception.
+		}
+	}
+	public long getReaderPosition(){
 		try {
 			return fileStore.position() - ( ki.limit() - ki.position());
 		} catch (IOException e) {
@@ -63,6 +70,10 @@ public  class KryoStore {
 	}
 	public void position(long offset){
 		try {
+			if (ko.position() >0 ) {
+				//Pending flush
+				ko.flush();
+			}
 			fileStore.position(offset);
 			ki = new Input(fileStore.getInputStream());
 			ko = new Output(fileStore.getOutputStream());
@@ -91,7 +102,7 @@ public  class KryoStore {
 		kryo.setClassLoader(getClass().getClassLoader());
 		kryo.setDefaultSerializer(CompatibleFieldSerializer.class);
 		kryo.register(InvocationHandler.class,new JdkProxySerializer());
-		
+
 		return kryo;
 	}
 
