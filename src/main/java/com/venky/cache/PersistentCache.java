@@ -1,14 +1,19 @@
 package com.venky.cache;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-
-import org.apache.commons.io.FileUtils;
-
 import com.esotericsoftware.kryo.KryoException;
 import com.venky.core.util.MultiException;
 import com.venky.core.util.ObjectUtil;
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.AbstractSet;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public abstract class PersistentCache<K,V> extends Cache<K, V>{
 
@@ -407,7 +412,8 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 	}
 
 	public void persist() {
-		for (K k : keySet()) {
+		List<K> keys = new ArrayList<>(keySet());
+		for (K k : keys) { //Avoid concurrent modification exception.
 			persist(k,get(k),false);
 		}
 		flush();
