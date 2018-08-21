@@ -4,9 +4,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationHandler;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Logger;
 
+import de.javakaffee.kryoserializers.JdkProxySerializer;
 import org.apache.commons.io.FileUtils;
 
 import com.esotericsoftware.kryo.Kryo;
@@ -186,6 +188,7 @@ public abstract class FileCache<T> {
 		Kryo kryo = new Kryo();
 		kryo.setClassLoader(getClass().getClassLoader());
 		kryo.setDefaultSerializer(CompatibleFieldSerializer.class);
+		kryo.register(InvocationHandler.class,new JdkProxySerializer());
 		return kryo;
 	}
 	
