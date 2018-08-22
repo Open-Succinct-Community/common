@@ -54,7 +54,7 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 		synchronized (this) {
 			if (cacheMap.size() >= maxEntries){
 				if (pruneFactor == 1){
-					clearEntries();
+					evictKeys(new ArrayList<K>(cacheMap.keySet()));
 					return;
 				}
 				int numEntriesToRemove = cacheMap.size() - maxEntries  + (int)(pruneFactor * maxEntries) ;
