@@ -120,19 +120,19 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 					v = super.get(key);
 				}else {
 					v = getPersistedValue((K)key);
-					put((K)key, v, true);
+					put((K)key, v, false);
 				}
 			}
 		}
 		return v;
 	}
 	public V put(K key,V value){
-		return put(key,value,false);
+		return put(key,value,true);
 	}
-	private V put(K key,V value,boolean alreadyPersisted){
+	private V put(K key,V value,boolean forcePersist){
 		ensureOpen();
 		V ret = super.put(key,value);
-		if (!alreadyPersisted){
+		if (forcePersist){
 			indexMap.remove(key);
 		}
 
