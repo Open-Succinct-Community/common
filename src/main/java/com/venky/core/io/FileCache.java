@@ -195,6 +195,16 @@ public abstract class FileCache<T> {
 	protected abstract T getValue(T oldCache);
 	protected abstract Logger getLogger() ;
 	protected abstract String getCacheDirectoryName();
-	
+
+	public void drop(){
+		File workFile = getCacheFile(CacheMode.WORK);
+		File readFile = getCacheFile(CacheMode.READ);
+		if (workFile.exists()) {
+			workFile.delete();
+		}
+		if (readFile.exists()){
+			readFile.delete();
+		}
+	}
 	
 }
