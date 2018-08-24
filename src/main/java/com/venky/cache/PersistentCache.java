@@ -476,6 +476,19 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 			}
 		}
 	}
+
+
+	public void clear(){
+		synchronized (this){
+			super.clear();
+			if (indexMap != null){
+				indexMap.clear();
+			}else {
+				indexMap = new HashMap<>();
+			}
+			compact();
+		}
+	}
 	
 	
 }
