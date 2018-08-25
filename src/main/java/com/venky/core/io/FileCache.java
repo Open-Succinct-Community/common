@@ -75,7 +75,7 @@ public abstract class FileCache<T> {
 		if (cacheFile.exists()) {
 			Kryo kryo = createCryo();
 			Input in = null;
-			Lock lock = Locker.instance().getLock(cacheName, LockMode.READ);
+			Lock lock = Locker.instance().getLock(getCacheFile(CacheMode.READ).getName(), LockMode.READ);
 			try {
 				lock.lock();
 				in = new Input(new FileInputStream(cacheFile));
@@ -197,13 +197,22 @@ public abstract class FileCache<T> {
 	protected abstract String getCacheDirectoryName();
 
 	public void drop(){
-		File workFile = getCacheFile(CacheMode.WORK);
-		File readFile = getCacheFile(CacheMode.READ);
-		if (workFile.exists()) {
-			workFile.delete();
-		}
-		if (readFile.exists()){
-			readFile.delete();
+		Lock lock = Locker.instance().getLock(getCacheFile(CacheMode.READ).getName(), LockMode.EXCLUSIVE);
+		try {
+			lock.lock();
+			File workFile = getCacheFile(CacheMode.WORK);
+			File readFile = getCacheFile(CacheMode.READ);
+			if (workFile.exists()) {
+				workFile.delete();
+			}
+			if (readFile.exists()) {
+				readFile.delete();
+			}
+		}finally {
+			if (lock != null) {
+				lock.unlock();
+				lock = null;
+			}
 		}
 	}
 	

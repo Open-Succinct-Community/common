@@ -112,16 +112,12 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 	public V get(Object key){
 		ensureOpen();
 		V v = null;
-		if (super.containsKey(key)) {
-			v = super.get(key);
-		}else {
-			synchronized (this) { 
-				if (super.containsKey(key)) {
-					v = super.get(key);
-				}else {
-					v = getPersistedValue((K)key);
-					put((K)key, v, false);
-				}
+		synchronized (this){
+			if (super.containsKey(key)) {
+				v = super.get(key);
+			}else {
+				v = getPersistedValue((K)key);
+				put((K)key, v, false);
 			}
 		}
 		return v;
@@ -317,7 +313,7 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 			
 		};
 	}
-	
+
 	protected V getPersistedValue(K key) { 
 		Long position = indexMap.get(key);
 		V v = null;
@@ -426,7 +422,9 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 		persist(k,get(k));
 	}
 	
-	public synchronized void compact() { 
+	public synchronized void compact() {
+		persist(); //IF anything is not persisted. First persist. Then compact.
+
 		KryoStore oldStore = getCacheStore();
 		KryoStore oldIndexStore = getIndexStore(); 
 		KryoStore newStore = new KryoStore(getTempCacheDB());
