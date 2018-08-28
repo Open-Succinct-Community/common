@@ -35,13 +35,15 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 	private double pruneFactor ;
 	private int MIN_ENTRIES_TO_EVICT ;
 	public void reconfigure(int maxEntries,double pruneFactor) {
-		this.maxEntries = maxEntries; 
-		this.pruneFactor = pruneFactor; 
-		if (this.pruneFactor > 1 || this.pruneFactor < 0 ){
-			throw new IllegalArgumentException("Prune factor must be between 0.0 than 1.0");
+		synchronized (this){
+			this.maxEntries = maxEntries;
+			this.pruneFactor = pruneFactor;
+			if (this.pruneFactor > 1 || this.pruneFactor < 0 ){
+				throw new IllegalArgumentException("Prune factor must be between 0.0 than 1.0");
+			}
+			this.MIN_ENTRIES_TO_EVICT = (int) (maxEntries * pruneFactor);
+			makeSpace();
 		}
-		this.MIN_ENTRIES_TO_EVICT = (int) (maxEntries * pruneFactor);
-		makeSpace();
 	}
 	protected Cache(int maxEntries,double pruneFactor){
 		reconfigure(maxEntries, pruneFactor);
