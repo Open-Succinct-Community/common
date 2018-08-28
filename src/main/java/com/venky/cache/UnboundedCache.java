@@ -1,8 +1,9 @@
 package com.venky.cache;
 
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class UnboundedCache<K,V> extends HashMap<K, V>{
+public abstract class UnboundedCache<K,V> extends ConcurrentHashMap<K, V> {
 
 	/**
 	 * 
