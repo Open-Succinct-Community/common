@@ -355,7 +355,7 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 		}
 	}
 	public  void close() {
-		clear();
+		super.clear();
 		indexMap.clear();
 		getIndexStore().close();
 		getCacheStore().close();
