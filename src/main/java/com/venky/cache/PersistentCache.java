@@ -47,65 +47,69 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 	@Override
 	public Set<K> keySet(){
 		ensureOpen();
-		return new AbstractSet<K>() {
-			
-			
-			@Override
-			public Iterator<K> iterator() {
-				Iterator<K> ki = new Iterator<K>() { 
-					Iterator<K> keys = indexMap.keySet().iterator();
+		synchronized (this){
+			return new AbstractSet<K>() {
 
-					@Override
-					public boolean hasNext() {
-						return keys.hasNext();
-					}
 
-					@Override
-					public K next() {
-						return keys.next();
-					}
-					
-				};
-				return ki;
-			}
+				@Override
+				public Iterator<K> iterator() {
+					Iterator<K> ki = new Iterator<K>() {
+						Iterator<K> keys = new ArrayList<>(indexMap.keySet()).iterator();
 
-			@Override
-			public int size() {
-				return indexMap.size();
-			} 
-			
-		};
+						@Override
+						public boolean hasNext() {
+							return keys.hasNext();
+						}
+
+						@Override
+						public K next() {
+							return keys.next();
+						}
+
+					};
+					return ki;
+				}
+
+				@Override
+				public int size() {
+					return indexMap.size();
+				}
+
+			};
+		}
 	}
 	@Override 
 	public Set<V> values(){
 		ensureOpen();
-		Set<V> set = new AbstractSet<V>() {
-			
-			@Override
-			public Iterator<V> iterator() {
-				return new Iterator<V>() {
-					Iterator<K> keys = indexMap.keySet().iterator();
+		synchronized (this){
+			Set<V> set = new AbstractSet<V>() {
 
-					@Override
-					public boolean hasNext() {
-						return keys.hasNext();
-					}
+				@Override
+				public Iterator<V> iterator() {
+					return new Iterator<V>() {
+						Iterator<K> keys = new ArrayList<>(indexMap.keySet()).iterator();
 
-					@Override
-					public V next() {
-						return get(keys.next());
-					}
-				};
-				
-			}
+						@Override
+						public boolean hasNext() {
+							return keys.hasNext();
+						}
 
-			@Override
-			public int size() {
-				return indexMap.size();
-			} 
-			
-		};
-		return set;
+						@Override
+						public V next() {
+							return get(keys.next());
+						}
+					};
+
+				}
+
+				@Override
+				public int size() {
+					return indexMap.size();
+				}
+
+			};
+			return set;
+		}
 	}
 	@SuppressWarnings("unchecked")
 	@Override
@@ -123,7 +127,9 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 		return v;
 	}
 	public V put(K key,V value){
-		return put(key,value,true);
+		synchronized (this){
+			return put(key,value,true);
+		}
 	}
 	private V put(K key,V value,boolean forcePersist){
 		ensureOpen();

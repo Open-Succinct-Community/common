@@ -145,7 +145,11 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 	@SuppressWarnings("unchecked")
 	@Override
 	public V get(Object key){
-		V v = null ;
+		V v = cacheMap.get(key) ;
+		if (v != null){
+			updateAccessTime((K)key);
+			return v;
+		}
 		synchronized (this) {
 			v = cacheMap.get(key);
 			if (v == null && !cacheMap.containsKey(key)){
@@ -253,9 +257,11 @@ public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable
 		accessedKeys(newEpoch).add(key);
 	}
 	
-	private void updateAccessTime(K key) { 
-		removePreviousAccessTime(key);
-		createNewAccessTime(key);
+	private void updateAccessTime(K key) {
+		synchronized (this){
+			removePreviousAccessTime(key);
+			createNewAccessTime(key);
+		}
 	}
 	
 	
