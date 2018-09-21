@@ -414,11 +414,15 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 	}
 
 	public void persist() {
-		List<K> keys = new ArrayList<>(keySet());
+		List<K> keys = new ArrayList<>();
+		synchronized (this) {
+			keys.addAll(keySet());
+		}
 		for (K k : keys) { //Avoid concurrent modification exception.
 			persist(k,get(k),false);
 		}
 		flush();
+
 	}
 	private void flush(){
 		getIndexStore().flush();

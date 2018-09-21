@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9c3537f8-01ba-4b59-be92-87abb77d0820" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/venky/cache/Cache.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/venky/cache/Cache.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/venky/cache/PersistentCache.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/venky/cache/PersistentCache.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/venky/network/Network.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/venky/network/Network.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/venky/network/shortestpath/Dijkstra.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/venky/network/shortestpath/Dijkstra.java" afterDir="false" />
-    </list>
+    <list default="true" id="9c3537f8-01ba-4b59-be92-87abb77d0820" name="Default Changelist" comment="" />
     <ignored path="$PROJECT_DIR$/target/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -18,7 +13,7 @@
     <session id="-681993551">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="10" />
+          <entry key="project.closed" value="11" />
           <entry key="project.open.time.0" value="1" />
           <entry key="project.open.time.1" value="4" />
           <entry key="project.open.time.2" value="4" />
