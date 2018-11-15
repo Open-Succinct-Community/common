@@ -23,6 +23,10 @@ public class SequenceMap<K,V> implements Map<K, V> {
 	public V getValueAt(int i) {
 		return get(keys.get(i));
 	}
+
+	public K getKeyAt(int i){
+		return keys.get(i);
+	}
 	
 	public SequenceMap<K,V> reverse(){ 
 		SequenceMap<K, V> ret = new SequenceMap<K,V>();

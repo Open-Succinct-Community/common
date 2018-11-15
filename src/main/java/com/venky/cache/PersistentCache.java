@@ -447,10 +447,10 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 			K pk  = oldStore.read();
 			V v  = oldStore.read();
 			if (k.equals(pk)) {
-				newStore.write(k);
-				newStore.write(v);
 				newIndexStore.write(k);
 				newIndexStore.write(new Long(newStore.getWriterPosition()));
+				newStore.write(k);
+				newStore.write(v);
 			}
 		};
 		oldStore.close();
