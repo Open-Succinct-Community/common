@@ -4,20 +4,21 @@
  */
 package com.venky.geo;
 
+import com.venky.xml.XMLDocument;
+import com.venky.xml.XMLElement;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.text.Format;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
-
-import com.venky.xml.XMLDocument;
-import com.venky.xml.XMLElement;
 
 /**
  *
@@ -30,6 +31,7 @@ public class GeoCoder {
     	//registerGeoSP("yahoo",new Yahoo());
     	registerGeoSP("google",new Google());
     	registerGeoSP("openstreetmap",new Nominatim());
+    	registerGeoSP( "here",new Here());
     }
     
     private static void registerGeoSP(String sp,GeoSP geoSP){
@@ -44,8 +46,8 @@ public class GeoCoder {
     	this(null);
     }
     
-    public void fillGeoInfo(String address,GeoLocation location){
-    	GeoLocation result = getLocation(address);
+    public void fillGeoInfo(String address,GeoLocation location,Map<String,String> params){
+    	GeoLocation result = getLocation(address,params);
     	if (result != null){
 	    	location.setLat(result.getLat());
 	    	location.setLng(result.getLng());
@@ -53,14 +55,14 @@ public class GeoCoder {
     }
     
     Collection<GeoSP> sps = null ;
-	public GeoLocation getLocation(String address){
+	public GeoLocation getLocation(String address,Map<String,String> params){
     	if (preferredServiceProvider == null ){
-    		sps = Arrays.asList(availableSps.get("google"),availableSps.get("openstreetmap"));
+    		sps = Arrays.asList(availableSps.get("here"), availableSps.get("openstreetmap"), availableSps.get("google"));
     	}else {
     		sps = Arrays.asList(preferredServiceProvider); 
     	}
     	for (GeoSP sp : sps){
-           GeoLocation loc = sp.getLocation(address);
+           GeoLocation loc = sp.getLocation(address,params);
            if (loc != null){
         	   Logger.getLogger(GeoCoder.class.getName()).info("Lat,Lon found using " + sp.getClass().getSimpleName());
         	   return loc;
@@ -69,42 +71,15 @@ public class GeoCoder {
     	return null;
     }
     private static interface GeoSP {
-    	public GeoLocation getLocation(String address);
+    	public GeoLocation getLocation(String address,Map<String,String> params);
     }
-    @Deprecated
-    private static class Yahoo implements GeoSP { 
-    	private static final String WSURL = "http://where.yahooapis.com/geocode?appid=vvNzzZ_V34HjikIGzQZ2Q6.ErIvyP7F7UOVVcbzmWH.2G84oCDRwE8_7cunqsBnjYY1x&q=";
 
-		@Override
-		public GeoLocation getLocation(String address) {
-			try {
-	            String url = WSURL + URLEncoder.encode(address,"UTF-8");
-	            URL u = new URL(url);
-	            URLConnection connection = u.openConnection();
-	            XMLDocument doc = XMLDocument.getDocumentFor(connection.getInputStream());
-	            String status = doc.getDocumentRoot().getChildElement("Error").getNodeValue();
-	            if ( "0".equals(status)){
-	            	Logger.getLogger(getClass().getName()).info("URL:" + url);
-	            	XMLElement result = doc.getDocumentRoot().getChildElement("Result");
-		            String radius = result.getChildElement("radius").getNodeValue(); 
-			        if (Double.valueOf(radius) < 5000){    	
-		            	String latitude = result.getChildElement("latitude").getNodeValue();
-		            	String longitude = result.getChildElement("longitude").getNodeValue();
-		            	return new GeoCoordinate(new BigDecimal(latitude), new BigDecimal(longitude));
-			        }
-	            }
-			}catch (IOException ex){
-				Logger.getLogger(getClass().getName()).warning(ex.getMessage());
-			}
-            return null;
-		}
-    	
-    }
     private static class Google implements GeoSP {
-    	private static final String WSURL = "http://maps.googleapis.com/maps/api/geocode/xml?sensor=false&address=";
-		public GeoLocation getLocation(String address) {
+    	private static final String WSURL = "http://maps.googleapis.com/maps/api/geocode/xml?sensor=false&key=%saddress=%s";
+
+		public GeoLocation getLocation(String address,Map<String,String> params) {
         	try {
-	            String url = WSURL + URLEncoder.encode(address,"UTF-8");
+	            String url = String.format(WSURL , params.get("google.api_key"), URLEncoder.encode(address,"UTF-8"));
 	            URL u = new URL(url);
 	            URLConnection connection = u.openConnection();
 	            XMLDocument doc = XMLDocument.getDocumentFor(connection.getInputStream());
@@ -132,10 +107,10 @@ public class GeoCoder {
     	
     }
     private static class Nominatim implements GeoSP {
-    	private static final String WSURL = "http://nominatim.openstreetmap.org/search?format=xml&polygon=0&q=";
-		public GeoLocation getLocation(String address) {
+    	private static final String WSURL = "http://nominatim.openstreetmap.org/search?format=xml&polygon=0&q=%s";
+		public GeoLocation getLocation(String address,Map<String,String> params) {
 			try {
-	            String url = WSURL + URLEncoder.encode(address,"UTF-8");
+	            String url = String.format(WSURL ,URLEncoder.encode(address,"UTF-8"));
 	            URL u = new URL(url);
 	            URLConnection connection = u.openConnection();
 	            XMLDocument doc = XMLDocument.getDocumentFor(connection.getInputStream());
@@ -152,4 +127,24 @@ public class GeoCoder {
     	}
     }
 
+	private static class Here implements GeoSP {
+		private static final String WSURL = "https://geocoder.api.here.com/6.2/geocode.json?app_id=%s&app_code=%s&searchtext=%s";
+		public GeoLocation getLocation(String address,Map<String,String> params) {
+			try {
+				String url = String.format(WSURL ,params.get("here.app_id"), params.get("here.app_code"), URLEncoder.encode(address,"UTF-8"));
+				URL u = new URL(url);
+				URLConnection connection = u.openConnection();
+				XMLDocument doc = XMLDocument.getDocumentFor(connection.getInputStream());
+				XMLElement place = doc.getDocumentRoot().getChildElement("place");
+
+				if (place != null){
+					Logger.getLogger(getClass().getName()).info("URL:" + url);
+					return new GeoCoordinate(new BigDecimal(place.getAttribute("lat")),new BigDecimal(place.getAttribute("lon")));
+				}
+			} catch (IOException e) {
+				Logger.getLogger(getClass().getName()).warning(e.getMessage());
+			}
+			return null;
+		}
+	}
 }
