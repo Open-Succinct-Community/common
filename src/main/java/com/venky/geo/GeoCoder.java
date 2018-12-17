@@ -4,6 +4,7 @@
  */
 package com.venky.geo;
 
+import com.venky.core.util.ObjectUtil;
 import com.venky.xml.XMLDocument;
 import com.venky.xml.XMLElement;
 
@@ -79,26 +80,29 @@ public class GeoCoder {
 
 		public GeoLocation getLocation(String address,Map<String,String> params) {
         	try {
-	            String url = String.format(WSURL , params.get("google.api_key"), URLEncoder.encode(address,"UTF-8"));
-	            URL u = new URL(url);
-	            URLConnection connection = u.openConnection();
-	            XMLDocument doc = XMLDocument.getDocumentFor(connection.getInputStream());
-	            XMLElement status = doc.getDocumentRoot().getChildElement("status");
-	            if ("OK".equals(status.getNodeValue())){
-	            	Logger.getLogger(getClass().getName()).info("URL:" + url);
-	                XMLElement location = doc.getDocumentRoot().getChildElement("result").getChildElement("geometry").getChildElement("location");
-	                float lat=-1; 
-	                float lng=-1 ;
-	                for (Iterator<XMLElement> nodeIterator =location.getChildElements() ; nodeIterator.hasNext();){
-	                    XMLElement node = nodeIterator.next();
-	                    if (node.getNodeName().equals("lat")){
-	                        lat = Float.valueOf(node.getChildren().next().getNodeValue());
-	                    }else if (node.getNodeName().equals("lng")){
-	                        lng = Float.valueOf(node.getChildren().next().getNodeValue());
-	                    }
-	                }
-	                return new GeoCoordinate(new BigDecimal(lat),new BigDecimal(lng));
-	            }
+        		String apiKey = params.get("google.api_key");
+        		if (!ObjectUtil.isVoid(apiKey)) {
+					String url = String.format(WSURL, apiKey, URLEncoder.encode(address, "UTF-8"));
+					URL u = new URL(url);
+					URLConnection connection = u.openConnection();
+					XMLDocument doc = XMLDocument.getDocumentFor(connection.getInputStream());
+					XMLElement status = doc.getDocumentRoot().getChildElement("status");
+					if ("OK".equals(status.getNodeValue())) {
+						Logger.getLogger(getClass().getName()).info("URL:" + url);
+						XMLElement location = doc.getDocumentRoot().getChildElement("result").getChildElement("geometry").getChildElement("location");
+						float lat = -1;
+						float lng = -1;
+						for (Iterator<XMLElement> nodeIterator = location.getChildElements(); nodeIterator.hasNext(); ) {
+							XMLElement node = nodeIterator.next();
+							if (node.getNodeName().equals("lat")) {
+								lat = Float.valueOf(node.getChildren().next().getNodeValue());
+							} else if (node.getNodeName().equals("lng")) {
+								lng = Float.valueOf(node.getChildren().next().getNodeValue());
+							}
+						}
+						return new GeoCoordinate(new BigDecimal(lat), new BigDecimal(lng));
+					}
+				}
 	        } catch (IOException e) {
 	           Logger.getLogger(getClass().getName()).warning(e.getMessage());
 	        }
@@ -131,15 +135,19 @@ public class GeoCoder {
 		private static final String WSURL = "https://geocoder.api.here.com/6.2/geocode.json?app_id=%s&app_code=%s&searchtext=%s";
 		public GeoLocation getLocation(String address,Map<String,String> params) {
 			try {
-				String url = String.format(WSURL ,params.get("here.app_id"), params.get("here.app_code"), URLEncoder.encode(address,"UTF-8"));
-				URL u = new URL(url);
-				URLConnection connection = u.openConnection();
-				XMLDocument doc = XMLDocument.getDocumentFor(connection.getInputStream());
-				XMLElement place = doc.getDocumentRoot().getChildElement("place");
+				String appId = params.get("here.app_id");
+				String appCode = params.get("here.app_code");
+				if (!ObjectUtil.isVoid(appCode) && !ObjectUtil.isVoid(appId)){
+					String url = String.format(WSURL ,appId, appCode, URLEncoder.encode(address,"UTF-8"));
+					URL u = new URL(url);
+					URLConnection connection = u.openConnection();
+					XMLDocument doc = XMLDocument.getDocumentFor(connection.getInputStream());
+					XMLElement place = doc.getDocumentRoot().getChildElement("place");
 
-				if (place != null){
-					Logger.getLogger(getClass().getName()).info("URL:" + url);
-					return new GeoCoordinate(new BigDecimal(place.getAttribute("lat")),new BigDecimal(place.getAttribute("lon")));
+					if (place != null){
+						Logger.getLogger(getClass().getName()).info("URL:" + url);
+						return new GeoCoordinate(new BigDecimal(place.getAttribute("lat")),new BigDecimal(place.getAttribute("lon")));
+					}
 				}
 			} catch (IOException e) {
 				Logger.getLogger(getClass().getName()).warning(e.getMessage());
