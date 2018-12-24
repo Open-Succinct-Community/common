@@ -16,7 +16,7 @@ import com.venky.core.math.DoubleUtils;
 import com.venky.core.util.Bucket;
 import com.venky.core.util.ObjectUtil;
 
-public abstract class Cache<K,V> implements Mergeable<Cache<K,V>> , Serializable ,Map<K,V>{
+public abstract class Cache<K,V> implements ICache<K,V> , Mergeable<Cache<K,V>> , Serializable ,Map<K,V>{
 	
 	/**
 	 * 

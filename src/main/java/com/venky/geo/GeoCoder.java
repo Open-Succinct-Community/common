@@ -7,13 +7,16 @@ package com.venky.geo;
 import com.venky.core.util.ObjectUtil;
 import com.venky.xml.XMLDocument;
 import com.venky.xml.XMLElement;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
-import java.text.Format;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -138,15 +141,20 @@ public class GeoCoder {
 				String appId = params.get("here.app_id");
 				String appCode = params.get("here.app_code");
 				if (!ObjectUtil.isVoid(appCode) && !ObjectUtil.isVoid(appId)){
-					String url = String.format(WSURL ,appId, appCode, URLEncoder.encode(address,"UTF-8"));
+					String url = String.format(WSURL , URLEncoder.encode(appId), URLEncoder.encode(appCode), URLEncoder.encode(address,"UTF-8"));
 					URL u = new URL(url);
 					URLConnection connection = u.openConnection();
-					XMLDocument doc = XMLDocument.getDocumentFor(connection.getInputStream());
-					XMLElement place = doc.getDocumentRoot().getChildElement("place");
+					JSONObject doc = (JSONObject)JSONValue.parse(new InputStreamReader(connection.getInputStream()));
+					JSONObject place = (JSONObject)doc.get("Response");
+					JSONArray  views = (JSONArray)place.get("View");
+					JSONObject view = (JSONObject)views.get(0);
+					JSONObject location = (JSONObject) ((JSONObject)((JSONArray)view.get("Result")).get(0)).get("Location");
+					JSONObject position = (JSONObject) location.get("DisplayPosition");
 
-					if (place != null){
+
+					if (position != null){
 						Logger.getLogger(getClass().getName()).info("URL:" + url);
-						return new GeoCoordinate(new BigDecimal(place.getAttribute("lat")),new BigDecimal(place.getAttribute("lon")));
+						return new GeoCoordinate(new BigDecimal((Double)position.get("Latitude")),new BigDecimal((Double)position.get("Longitude")));
 					}
 				}
 			} catch (IOException e) {
