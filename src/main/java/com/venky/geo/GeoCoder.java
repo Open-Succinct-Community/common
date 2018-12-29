@@ -14,6 +14,7 @@ import org.json.simple.JSONValue;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
@@ -114,20 +115,47 @@ public class GeoCoder {
     	
     }
     private static class Nominatim implements GeoSP {
-    	private static final String WSURL = "http://nominatim.openstreetmap.org/search?format=xml&polygon=0&q=%s";
+    	private static final String WSURL = "https://nominatim.openstreetmap.org/search?format=xml&polygon=0&q=%s";
 		public GeoLocation getLocation(String address,Map<String,String> params) {
 			try {
 	            String url = String.format(WSURL ,URLEncoder.encode(address,"UTF-8"));
 	            URL u = new URL(url);
-	            URLConnection connection = u.openConnection();
-	            XMLDocument doc = XMLDocument.getDocumentFor(connection.getInputStream());
+	            HttpURLConnection conn = (HttpURLConnection)u.openConnection();
+				conn.setReadTimeout(5000);
+				conn.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
+				conn.addRequestProperty("User-Agent", "Mozilla");
+
+				boolean redirect = false;
+
+				// normally, 3xx is redirect
+				int status = conn.getResponseCode();
+				if (status != HttpURLConnection.HTTP_OK) {
+					if (status == HttpURLConnection.HTTP_MOVED_TEMP
+						|| status == HttpURLConnection.HTTP_MOVED_PERM
+							|| status == HttpURLConnection.HTTP_SEE_OTHER)
+					redirect = true;
+				}
+
+				if (redirect) {
+					String newUrl = conn.getHeaderField("Location");
+
+					// get the cookie if need, for login
+					String cookies = conn.getHeaderField("Set-Cookie");
+
+					// open the new connnection again
+					conn = (HttpURLConnection) new URL(newUrl).openConnection();
+					conn.setRequestProperty("Cookie", cookies);
+					conn.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
+					conn.addRequestProperty("User-Agent", "Mozilla");
+				}
+	            XMLDocument doc = XMLDocument.getDocumentFor(conn.getInputStream());
 	            XMLElement place = doc.getDocumentRoot().getChildElement("place");
 	            
 	            if (place != null){
 	            	Logger.getLogger(getClass().getName()).info("URL:" + url);
 	                return new GeoCoordinate(new BigDecimal(place.getAttribute("lat")),new BigDecimal(place.getAttribute("lon")));
 	            }
-	        } catch (IOException e) {
+	        } catch (Exception e) {
 	           Logger.getLogger(getClass().getName()).warning(e.getMessage());
 	        }
         	return null;		
