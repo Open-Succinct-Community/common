@@ -1,5 +1,5 @@
 package com.venky.cache;
 
-public interface ICache<K,V> {
-    public V get(K key);
+public interface ICache<V> {
+    public V get(Object key);
 }
