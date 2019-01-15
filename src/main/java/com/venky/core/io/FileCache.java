@@ -41,7 +41,7 @@ public abstract class FileCache<T> {
 
 	public T get() {
 		T t = getFromCache(CacheMode.READ);
-		if (t == null || isCacheInValidated()){
+		if (t == null || isCacheInValidated(t)){
 			T fresh = getValue(t);
 			writeToCache(fresh);
 			if (t == null || isCachingComplete()){
@@ -50,7 +50,11 @@ public abstract class FileCache<T> {
 		}
 		return t;
 	}
-	
+
+	protected boolean isCacheInValidated(T t){
+		return isCacheInValidated();
+	}
+
 	protected String getCacheName(){
 		return cacheName;
 	}
@@ -105,6 +109,7 @@ public abstract class FileCache<T> {
 		}
 		return cache;
 	}
+
 	
 	public boolean isCacheInValidated(){
 		File f = getCacheFile(CacheMode.READ);

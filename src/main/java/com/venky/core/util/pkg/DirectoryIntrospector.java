@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
+import java.util.function.Predicate;
 
 public class DirectoryIntrospector extends PackageIntrospector{
 	private final File root ; 
@@ -12,8 +13,8 @@ public class DirectoryIntrospector extends PackageIntrospector{
 		this.root = root;
 	}
 
-	@Override
-	public List<String> getClasses(String path) {
+    @Override
+    public List<String> getFiles(String path, Predicate<String> filter) {
         Stack<File> sFiles = new Stack<File>();
         sFiles.push(root);
         List<String> classes = new ArrayList<String>();
@@ -25,9 +26,13 @@ public class DirectoryIntrospector extends PackageIntrospector{
             pathRelativeToRoot = ((File.separatorChar != '/') ? pathRelativeToRoot.replace(File.separatorChar, '/') : pathRelativeToRoot) ;
             
             if (f.isDirectory()){
-                sFiles.addAll(Arrays.asList(f.listFiles()));
+                if (path.startsWith(pathRelativeToRoot) || pathRelativeToRoot.startsWith(path)) {
+                    sFiles.addAll(Arrays.asList(f.listFiles()));
+                }
             }else if (pathRelativeToRoot.startsWith(path)){
-                addClassName(classes, pathRelativeToRoot);
+                if (filter.test(pathRelativeToRoot)){
+                    classes.add(pathRelativeToRoot);
+                }
             }
         }
         return classes;

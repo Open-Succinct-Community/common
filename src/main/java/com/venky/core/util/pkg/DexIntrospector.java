@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 
 public class DexIntrospector extends PackageIntrospector {
@@ -14,8 +15,8 @@ public class DexIntrospector extends PackageIntrospector {
 	}
 
 	@Override
-	public List<String> getClasses(String path) {
-		List<String> classes = new ArrayList<String>();
+	public List<String> getFiles(String path, Predicate<String> filter) {
+		List<String> files = new ArrayList<String>();
 		path = path.replace('/', '.');
 		try {
 			Object oDexFile = Class.forName("dalvik.system.DexFile").getConstructor(File.class).newInstance(dexFile);
@@ -25,12 +26,14 @@ public class DexIntrospector extends PackageIntrospector {
 			while(sEntries.hasMoreElements()){
 				String className = sEntries.nextElement();
 				if (className.startsWith(path)){
-					classes.add(className);
+					if (filter.test(className)){
+						files.add(className);
+					}
 				}
 			}
 		} catch (Exception ex){
 			Logger.getLogger(getClass().getName()).info("Could not parse dex file: " + dexFile.toString() + " due to exception :" + ex.getMessage());
 		}
-		return classes;
+		return files;
 	}
 }
