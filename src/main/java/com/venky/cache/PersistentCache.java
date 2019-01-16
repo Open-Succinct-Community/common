@@ -331,7 +331,7 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 				cacheStore.position(position);
 				K k = cacheStore.read();
 				V pv = cacheStore.read();
-				if (k.equals(key)) {
+				if (k != null && k.equals(key)) {
 					v = pv;
 				}
 			}
