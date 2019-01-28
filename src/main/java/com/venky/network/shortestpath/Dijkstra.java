@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -27,8 +28,10 @@ import com.venky.network.Node;
 public class Dijkstra extends Network{
     public final String LENGTH = "length";
 
-
     public Path shortestPath(int from,int to){
+        return shortestPath(from,to,new HashSet<>());
+    }
+    public Path shortestPath(int from,int to, Set<Integer> skipNodes){
         final Map<Integer,Integer> distanceHash = new HashMap<Integer, Integer>();
         final Map<Integer,Integer> previousHash = new HashMap<Integer, Integer>();
         
@@ -60,6 +63,9 @@ public class Dijkstra extends Network{
             Node n = getNode(u);
             for (Edge e : n.getEdges()){
                 Integer v = e.getConnectedNode(u);
+                if (skipNodes.contains(v)){
+                    continue;
+                }
                 int edge_length = (Integer)e.getAttribute(LENGTH);
                 int alt = distanceHash.get(u) + edge_length;
                 if (distanceHash.get(v) > alt){
