@@ -25,6 +25,10 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 		super(maxEntries,pruneFactor);
 	}
 
+	public boolean exists(){
+		return getIndexDB().exists() && getCacheDB().exists();
+	}
+
 	public int size() {
 		ensureOpen();
 		return indexMap.size();
