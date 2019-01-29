@@ -51,7 +51,7 @@ public abstract class FileCache<T> {
 		return t;
 	}
 
-	protected boolean isCacheInValidated(T t){
+	public boolean isCacheInValidated(T t){
 		return isCacheInValidated();
 	}
 
