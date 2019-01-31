@@ -364,13 +364,27 @@ public abstract class PersistentCache<K,V> extends Cache<K, V>{
 			indexMap = tmp;
 		}
 	}
+
+	public boolean isClosed(){
+		return indexMap == null;
+	}
+	/**
+	 * Ensure closing without opening should notbe an issue.
+	 */
 	public  void close() {
 		super.clear();
-		indexMap.clear();
-		getIndexStore().close();
-		getCacheStore().close();
-		this.cacheStore = null ; 
-		this.indexStore = null ;
+		if (indexMap != null){
+			indexMap.clear();
+			indexMap = null;
+		}
+		if (this.indexStore != null){
+			getIndexStore().close();
+			this.indexStore = null ;
+		}
+		if (this.cacheStore != null){
+			getCacheStore().close();
+			this.cacheStore = null ;
+		}
 	}
 
 	protected File getTempCacheDB() { 
