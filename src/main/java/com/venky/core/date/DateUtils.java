@@ -13,6 +13,7 @@ import java.util.SimpleTimeZone;
 import java.util.TimeZone;
 
 public class DateUtils { // NOPMD by VMahadevan on 1/26/09 11:16 PM
+    private static final ThreadLocal<Map<String,SimpleDateFormat>> dateFormatFactory = new ThreadLocal<>();
 
     public static long compareToMillis(final Date d1, final Date d2) {
         return compareToMillis(d1.getTime(), d2.getTime());
@@ -104,7 +105,6 @@ public class DateUtils { // NOPMD by VMahadevan on 1/26/09 11:16 PM
     
     public static final Date HIGH_DATE = getHighDate();
 
-    private static final ThreadLocal<Map<String,SimpleDateFormat>> dateFormatFactory = new ThreadLocal<>();
     public static DateFormat getFormat(String fmt){
         if (dateFormatFactory.get() == null){
             dateFormatFactory.set(new UnboundedCache<String, SimpleDateFormat>() {
