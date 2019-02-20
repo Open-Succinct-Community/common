@@ -13,7 +13,7 @@ public class SeekableByteArrayOutputStream extends OutputStream{
 	public SeekableByteArrayOutputStream(){
 		this(256);
 	}
-	private SeekableByteArrayOutputStream(int minSize){
+	public SeekableByteArrayOutputStream(int minSize){
 		this.minSize = minSize;
 		this.buf = new byte[minSize];
 		this.pos = 0;

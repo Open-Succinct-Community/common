@@ -1,11 +1,14 @@
 package com.venky.core.date;
 
+import com.venky.cache.UnboundedCache;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Map;
 import java.util.SimpleTimeZone;
 import java.util.TimeZone;
 
@@ -101,8 +104,17 @@ public class DateUtils { // NOPMD by VMahadevan on 1/26/09 11:16 PM
     
     public static final Date HIGH_DATE = getHighDate();
 
+    private static final ThreadLocal<Map<String,SimpleDateFormat>> dateFormatFactory = new ThreadLocal<>();
     public static DateFormat getFormat(String fmt){
-        return new SimpleDateFormat(fmt, Locale.getDefault());    
+        if (dateFormatFactory.get() == null){
+            dateFormatFactory.set(new UnboundedCache<String, SimpleDateFormat>() {
+                @Override
+                protected SimpleDateFormat getValue(String fmt) {
+                    return new SimpleDateFormat(fmt,Locale.getDefault());
+                }
+            });
+        }
+        return dateFormatFactory.get().get(fmt);
     }
     private static Date getHighDate() {
         try {

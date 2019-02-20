@@ -150,7 +150,7 @@ public abstract class FileCache<T> {
 			if (lock != null){
 				lock.unlock();
 				lock = null;
-			}
+				}
 		}
 	}
 	public boolean isCachingComplete(){
