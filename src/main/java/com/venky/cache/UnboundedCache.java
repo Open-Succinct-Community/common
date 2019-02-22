@@ -14,12 +14,14 @@ public abstract class UnboundedCache<K,V> extends ConcurrentHashMap<K, V> {
 		K k = (K)key;
 		V v = super.get(k);
 		if (v == null){
-			synchronized (this) {
-				v = super.get(k);
-				if (v == null){
-					v = getValue(k);
-					if (v != null){
+			v = getValue(k); //Wastful getValue is better than blocking GetValue.
+			if (v != null){
+				synchronized (this){
+					V vExisting = super.get(k);
+					if (vExisting == null){
 						super.put(k, v);
+					}else {
+						v = vExisting;
 					}
 				}
 			}

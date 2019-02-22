@@ -150,15 +150,22 @@ public abstract class Cache<K,V> implements ICache<V> , Mergeable<Cache<K,V>> , 
 			updateAccessTime((K)key);
 			return v;
 		}
-		synchronized (this) {
-			v = cacheMap.get(key);
-			if (v == null && !cacheMap.containsKey(key)){
-				v = getValue((K)key);
-				put((K)key, v);
-			}else { 
-				updateAccessTime((K)key);
+
+		if (!containsKey(key)){
+			v = getValue((K)key); //Can be too expensive. Blocking can be disastrous.
+			synchronized (this){
+				V v1 = cacheMap.get(key);
+				if (v1 == null){
+					put((K) key, v);
+				}else {
+					v = v1;
+					updateAccessTime((K)key);
+				}
 			}
+		}else {
+			updateAccessTime((K)key);
 		}
+
 		return v;
 	}
 
