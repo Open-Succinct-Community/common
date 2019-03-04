@@ -6,9 +6,12 @@ import java.util.logging.Logger;
 
 public class Encryptor {
 	public static String encrypt(String key) {
+		return encrypt(key,"SHA");
+	}
+	public static String encrypt(String key, String algorithm) {
 		MessageDigest digest;
 		try {
-			digest = MessageDigest.getInstance("SHA");
+			digest = MessageDigest.getInstance(algorithm);
 		} catch (NoSuchAlgorithmException e) {
 			throw new RuntimeException(e);
 		}
