@@ -89,6 +89,9 @@ public class GeoCoder {
 					String url = String.format(WSURL, apiKey, URLEncoder.encode(address, "UTF-8"));
 					URL u = new URL(url);
 					URLConnection connection = u.openConnection();
+					connection.setConnectTimeout(5000);
+					connection.setReadTimeout(5000);
+
 					XMLDocument doc = XMLDocument.getDocumentFor(connection.getInputStream());
 					XMLElement status = doc.getDocumentRoot().getChildElement("status");
 					if ("OK".equals(status.getNodeValue())) {
@@ -121,7 +124,9 @@ public class GeoCoder {
 	            String url = String.format(WSURL ,URLEncoder.encode(address,"UTF-8"));
 	            URL u = new URL(url);
 	            HttpURLConnection conn = (HttpURLConnection)u.openConnection();
+				conn.setConnectTimeout(5000);
 				conn.setReadTimeout(5000);
+
 				conn.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
 				conn.addRequestProperty("User-Agent", "Mozilla");
 
@@ -144,6 +149,9 @@ public class GeoCoder {
 
 					// open the new connnection again
 					conn = (HttpURLConnection) new URL(newUrl).openConnection();
+					conn.setConnectTimeout(5000);
+					conn.setReadTimeout(5000);
+
 					conn.setRequestProperty("Cookie", cookies);
 					conn.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
 					conn.addRequestProperty("User-Agent", "Mozilla");
@@ -172,6 +180,8 @@ public class GeoCoder {
 					String url = String.format(WSURL , URLEncoder.encode(appId), URLEncoder.encode(appCode), URLEncoder.encode(address,"UTF-8"));
 					URL u = new URL(url);
 					URLConnection connection = u.openConnection();
+					connection.setConnectTimeout(5000);
+					connection.setReadTimeout(5000);
 					JSONObject doc = (JSONObject)JSONValue.parse(new InputStreamReader(connection.getInputStream()));
 					JSONObject place = (JSONObject)doc.get("Response");
 					JSONArray  views = (JSONArray)place.get("View");
