@@ -53,7 +53,11 @@ public class NumberToWordsConverter {
 	private StringBuilder words  = new StringBuilder();
 	public NumberToWordsConverter(int number){
 		this.number = number;
-		fillWords(this.number);
+		if (this.number == 0){
+			words.append("ZERO");
+		}else {
+			fillWords(this.number);
+		}
 	}
 	private void fillWords(int remaining){
 		if (remaining == 0){
