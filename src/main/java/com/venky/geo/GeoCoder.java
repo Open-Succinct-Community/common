@@ -165,7 +165,13 @@ public class GeoCoder {
 	            }
 	        } catch (Exception e) {
 	           Logger.getLogger(getClass().getName()).warning(e.getMessage());
-	        }
+	        } finally {
+				try {
+					Thread.sleep(1000); //To ensure nominatim response code 429 doesnot happen.
+				}catch (InterruptedException ex){
+					//
+				}
+			}
         	return null;		
     	}
     }
