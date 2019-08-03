@@ -191,17 +191,20 @@ public class GeoCoder {
 					JSONObject doc = (JSONObject)JSONValue.parse(new InputStreamReader(connection.getInputStream()));
 					JSONObject place = (JSONObject)doc.get("Response");
 					JSONArray  views = (JSONArray)place.get("View");
-					JSONObject view = (JSONObject)views.get(0);
-					JSONObject location = (JSONObject) ((JSONObject)((JSONArray)view.get("Result")).get(0)).get("Location");
-					JSONObject position = (JSONObject) location.get("DisplayPosition");
+					JSONObject position = null;
 
+					if (views != null && !views.isEmpty()){
+						JSONObject view = (JSONObject)views.get(0);
+						JSONObject location = (JSONObject) ((JSONObject)((JSONArray)view.get("Result")).get(0)).get("Location");
+						position = (JSONObject) location.get("DisplayPosition");
+					}
 
 					if (position != null){
 						Logger.getLogger(getClass().getName()).info("URL:" + url);
 						return new GeoCoordinate(new BigDecimal((Double)position.get("Latitude")),new BigDecimal((Double)position.get("Longitude")));
 					}
 				}
-			} catch (IOException e) {
+			} catch (Exception e) {
 				Logger.getLogger(getClass().getName()).warning(e.getMessage());
 			}
 			return null;
