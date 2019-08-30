@@ -31,7 +31,7 @@ public class Encryptor {
 			hex = hex.substring(hex.length()-2);
 			builder.append(hex);
 		}
-		Logger.getLogger(Encryptor.class.getName()).fine("Encrypted:" + key + " to " + builder.toString());
+		//Logger.getLogger(Encryptor.class.getName()).fine("Encrypted:" + key + " to " + builder.toString());
 		return builder.toString();
 	}
 }

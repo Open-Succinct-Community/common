@@ -129,6 +129,7 @@ public abstract class XMLSerializationHelper {
 	public static Document getDocument(Reader reader) {
 		try {
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			dbf.setNamespaceAware(true);
 			DocumentBuilder builder = dbf.newDocumentBuilder();
 			return builder.parse(new InputSource(reader));
 		} catch (Exception e) {

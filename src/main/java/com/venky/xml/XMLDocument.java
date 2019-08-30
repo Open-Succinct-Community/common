@@ -23,7 +23,9 @@ public class XMLDocument {
     static DocumentBuilder builder = null; 
     static {
         try {
-            builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            builder = factory.newDocumentBuilder();
         }catch (ParserConfigurationException ex){
             throw new RuntimeException(ex);
         }
