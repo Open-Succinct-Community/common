@@ -14,6 +14,7 @@ import org.json.simple.JSONValue;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -291,14 +292,29 @@ public class GeoCoder {
 
     private static class Here implements GeoSP {
 
-        private static final String WSURL = "https://geocoder.api.here.com/6.2/geocode.json?app_id=%s&app_code=%s&searchtext=%s";
+        private String getGeoCodingUrl(String address,Map<String,String> params)throws UnsupportedEncodingException{
+            String appKey = params.get("here.app_key");                
+            String appId = params.get("here.app_id");
+            String appCode = params.get("here.app_code");
+            if (!ObjectUtil.isVoid(appKey)){
+                return String.format("https://geocoder.ls.hereapi.com/6.2/geocode.json?apiKey=%s&searchtext=%s",
+                        URLEncoder.encode(appKey,"UTF-8"),
+                        URLEncoder.encode(address,"UTF-8"));
+            }else if (!ObjectUtil.isVoid(appCode)) {
+                return String.format("https://geocoder.api.here.com/6.2/geocode.json?app_id=%s&app_code=%s&searchtext=%s",
+                        URLEncoder.encode(appId,"UTF-8"),
+                        URLEncoder.encode(appCode,"UTF-8"),
+                        URLEncoder.encode(address,"UTF-8"));
+            }else {
+                    return null;
+            }
+        }
 
         public GeoLocation getLocation(String address, Map<String, String> params) {
             try {
-                String appId = params.get("here.app_id");
-                String appCode = params.get("here.app_code");
-                if (!ObjectUtil.isVoid(appCode) && !ObjectUtil.isVoid(appId)) {
-                    String url = String.format(WSURL, URLEncoder.encode(appId), URLEncoder.encode(appCode), URLEncoder.encode(address, "UTF-8"));
+                String url = getGeoCodingUrl(address, params);
+                
+                if (!ObjectUtil.isVoid(url)) {
                     URL u = new URL(url);
                     URLConnection connection = u.openConnection();
                     connection.setConnectTimeout(5000);
@@ -325,19 +341,33 @@ public class GeoCoder {
             return null;
         }
 
-        public static final String REVERSE_GEO_CODE_URL
-                = "https://reverse.geocoder.api.here.com/6.2/reversegeocode.json?prox=%f,%f&mode=retrieveLandmarks&maxresults=1&gen=9&app_id=%s&app_code=%s";
+        private String getReverseGeoCodeUrl(GeoLocation geoLocation, Map<String,String> params) throws UnsupportedEncodingException{
+            String appKey = params.get("here.app_key");                
+            String appId = params.get("here.app_id");
+            String appCode = params.get("here.app_code");
+            if (!ObjectUtil.isVoid(appKey)){
+                return String.format("https://reverse.geocoder.ls.hereapi.com/6.2/reversegeocode.json?prox=%f,%f"
+                                                + "&mode=retrieveLandmarks&maxresults=1&gen=9&apiKey=%s",
+                        geoLocation.getLat().floatValue(), geoLocation.getLng().floatValue(),URLEncoder.encode(appKey,"UTF-8"));
+            }else if (!ObjectUtil.isVoid(appCode)) {
+                return String.format("https://reverse.geocoder.api.here.com/6.2/reversegeocode.json?prox=%f,%f"
+                        + "&mode=retrieveLandmarks&maxresults=1&gen=9&app_id=%s&app_code=%s",
+                        geoLocation.getLat().floatValue(), geoLocation.getLng().floatValue(),
+                        URLEncoder.encode(appId,"UTF-8"),
+                        URLEncoder.encode(appCode,"UTF-8"));
+            }else {
+                    return null;
+            }
+            
+        }
         
         
         @Override
         public GeoAddress getAddress(GeoLocation geoLocation, Map<String, String> params) {
             GeoAddress address = null;
-            String appId = params.get("here.app_id");
-            String appCode = params.get("here.app_code");
             try {
-                if (!ObjectUtil.isVoid(appCode) && !ObjectUtil.isVoid(appId)) {
-                    String url = String.format(REVERSE_GEO_CODE_URL, geoLocation.getLat().floatValue(), geoLocation.getLng().floatValue(),
-                            URLEncoder.encode(appId), URLEncoder.encode(appCode));
+                String url = getReverseGeoCodeUrl(geoLocation, params);
+                if (!ObjectUtil.isVoid(url)) {
                     URL u = new URL(url);
                     HttpURLConnection conn = (HttpURLConnection) u.openConnection();
                     conn.setConnectTimeout(5000);
