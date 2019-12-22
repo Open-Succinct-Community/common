@@ -15,10 +15,19 @@ import java.util.*;
 
 public class GeoCluster extends Cluster<GeoCoordinate> {
 
+    public GeoCluster(GeoCoordinate fixedCentroid, Metric<GeoCoordinate> m) {
+        super(fixedCentroid, m);
+    }
+
     public static final ClusterBuilder<GeoCoordinate> BUILDER = new ClusterBuilder<GeoCoordinate>() {
         @Override
         public Cluster<GeoCoordinate> init(CenterFinderBuilder<GeoCoordinate> centerFinderBuilder, Metric<GeoCoordinate> metric) {
             return new GeoCluster(centerFinderBuilder,metric);
+        }
+
+        @Override
+        public Cluster<GeoCoordinate> init(GeoCoordinate fixedCentroid, Metric<GeoCoordinate> metric) {
+            return new GeoCluster(fixedCentroid, metric);
         }
     };
     public GeoCluster(CenterFinderBuilder<GeoCoordinate> centerFinderBuilder,Metric<GeoCoordinate> metric) {
