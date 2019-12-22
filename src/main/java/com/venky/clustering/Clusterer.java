@@ -36,6 +36,11 @@ public class Clusterer<T> {
                 public Cluster<T> init(CenterFinderBuilder<T> cf, Metric<T> m) {
                     return new Cluster<>(cf,m);
                 }
+
+                @Override
+                public Cluster<T> init(T fixedCentroid, Metric<T> metric) {
+                    return new Cluster<>(fixedCentroid,metric);
+                }
             };
         }else {
             this.clusterBuilder = clusterBuilder;
@@ -55,10 +60,9 @@ public class Clusterer<T> {
     }
     
     public List<Cluster<T>> cluster(Collection<T> points, List<T> centroids){
-        List<Cluster<T>> clusters = new ArrayList<Cluster<T>>();
+        List<Cluster<T>> clusters = new ArrayList<>();
         for (T centroid: centroids){
-            Cluster<T> init = clusterBuilder.init(centerFinderBuilder,metric);
-            init.addPoint(centroid);
+            Cluster<T> init = clusterBuilder.init(centroid,metric);
             clusters.add(init);
         }
         
