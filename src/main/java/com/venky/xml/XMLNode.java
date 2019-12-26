@@ -90,7 +90,7 @@ public class XMLNode {
 
     public void appendChild(XMLNode child) {
         if (getOwnerDocument() != child.getOwnerDocument()) {
-            getOwnerDocument().importNode(child.inner, true);
+            child = new XMLNode(getXMLDocument(),getOwnerDocument().importNode(child.inner, true));
         }
         inner.appendChild(child.inner);
     }
