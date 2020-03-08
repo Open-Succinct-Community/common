@@ -136,22 +136,28 @@ public abstract class Cache<K,V> implements ICache<V> , Mergeable<Cache<K,V>> , 
 	@SuppressWarnings("unchecked")
 	@Override
 	public V get(Object key){
-		V v = cacheMap.get(key) ;
-		if (v != null){
-			return v;
-		}
-
-		if (!containsKey(key)){
-			v = getValue((K)key); //Can be too expensive. Blocking can be disastrous.
-			synchronized (this){
-				V v1 = cacheMap.get(key);
-				if (v1 == null){
-					put((K) key, v);
-				}else {
-					v = v1;
-				}
+		V v = null;
+		boolean keyPresent = false;
+		synchronized (this){
+			v = cacheMap.get(key);
+			keyPresent = v != null || cacheMap.containsKey(key);
+			if (keyPresent){
+				return v;
 			}
 		}
+
+		v = getValue((K)key); //Can be too expensive. Blocking can be disastrous.
+
+		synchronized (this){
+			V v1 = cacheMap.get(key);
+			keyPresent = v1 != null || cacheMap.containsKey(key);
+			if (keyPresent) {
+				v = v1;
+			}else {
+				put((K)key,v);
+			}
+		}
+
 		return v;
 	}
 

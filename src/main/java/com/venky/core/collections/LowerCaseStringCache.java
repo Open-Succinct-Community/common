@@ -9,7 +9,7 @@ public class LowerCaseStringCache extends Cache<String, String>{
 	 */
 	private static final long serialVersionUID = -6371406286614896615L;
 	private LowerCaseStringCache(){
-		super(0,0);
+		super();
 	}
 	
 	private static LowerCaseStringCache instance =  new LowerCaseStringCache();
