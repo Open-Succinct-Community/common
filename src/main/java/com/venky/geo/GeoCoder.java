@@ -85,12 +85,40 @@ public class GeoCoder {
         return null;
     }
 
+    public Double getDrivingDistanceKms(GeoLocation l1, GeoLocation l2, Map<String,String> params){
+        return getDrivingDistanceKms(l1.getLat(),l1.getLng(),l2.getLat(),l2.getLng(),params);
+    }
+    public Double getDrivingDistanceKms(BigDecimal lat1, BigDecimal lng1, BigDecimal lat2, BigDecimal lng2, Map<String,String> params){
+        if (preferredServiceProvider == null){
+            sps = Arrays.asList(availableSps.get("here"), availableSps.get("openstreetmap"), availableSps.get("google"));
+        }else {
+            sps = Arrays.asList(preferredServiceProvider);
+        }
+        for (GeoSP sp :sps){
+            Double distance = sp.getDrivingDistance(lat1,lng1,lat2,lng2,params);
+            if (distance != null){
+                Logger.getLogger(GeoCoder.class.getName()).info("Distance found using " + sp.getClass().getSimpleName());
+                return distance;
+            }
+        }
+        return null;
+    }
+    public Double distanceKms(GeoLocation l1, GeoLocation l2){
+        return new GeoCoordinate(l1).distanceTo(new GeoCoordinate(l2));
+    }
+
     private static interface GeoSP {
 
         public GeoLocation getLocation(String address, Map<String, String> params);
 
         public GeoAddress getAddress(GeoLocation geoLocation, Map<String, String> params);
 
+        default Double getDrivingDistance(BigDecimal lat1, BigDecimal lng1, BigDecimal lat2, BigDecimal lng2, Map<String, String> params){
+            return distance(lat1,lng1,lat2,lng2);
+        }
+        public static Double distance(BigDecimal lat1, BigDecimal lng1, BigDecimal lat2, BigDecimal lng2){
+            return new GeoCoordinate(lat1, lng1).distanceTo(new GeoCoordinate(lat2, lng2));
+        }
     }
 
     public static class GeoAddress {
@@ -398,6 +426,47 @@ public class GeoCoder {
                 
             }
             return null;
+        }
+
+        @Override
+        public Double getDrivingDistance(BigDecimal lat1, BigDecimal lng1, BigDecimal lat2, BigDecimal lng2, Map<String, String> params)  {
+            String appKey = params.get("here.app_key");
+            /*
+            curl 'https://router.hereapi.com/v8/routes?transportMode=car&origin=12.902987,77.599674&destination=13.198533,77.707956&return=summary&apiKey=4Su9WUwZJ7_dvMn1uDJDs0IoSgDltWlI6Efm4CPnfBM'
+
+                {"routes":[{"id":"8ac052c1-b446-403e-b867-65744a5dc8e5","sections":[{"id":"6692dcb0-2b75-4ad7-b9d0-983cf0e1176d","type":"vehicle","departure":{"place":{"type":"place","location":{"lat":12.9029757,"lng":77.6000587},"originalLocation":{"lat":12.902987,"lng":77.599674}}},"arrival":{"place":{"type":"place","location":{"lat":13.19847,"lng":77.7079559},"originalLocation":{"lat":13.198533,"lng":77.7079559}}},"summary":{"duration":5353,"length":43380,"baseDuration":4055},"transport":{"mode":"car"}}]}]}
+             */
+
+            if (!ObjectUtil.isVoid(appKey)) {
+                try {
+                    String url = String.format("https://router.api.here.com/v8/routes?transportMode=%s&apiKey=%s&origin=%f,%f&destination=%f,%f&return=summary",
+                            URLEncoder.encode(params.getOrDefault("transportMode", "car")),
+                            URLEncoder.encode(appKey, "UTF-8"),
+                            lat1.floatValue(), lng1.floatValue(),
+                            lat2.floatValue(), lng2.floatValue());
+
+                    URL u = new URL(url);
+                    HttpURLConnection conn = (HttpURLConnection) u.openConnection();
+                    conn.setConnectTimeout(5000);
+                    conn.setReadTimeout(5000);
+
+                    conn.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
+                    conn.addRequestProperty("User-Agent", "Mozilla");
+                    JSONObject out = (JSONObject) JSONValue.parse(new InputStreamReader(conn.getInputStream()));
+                    JSONArray routes = (JSONArray)out.get("routes");
+                    JSONObject route = (JSONObject)routes.get(0);
+                    JSONArray sections = (JSONArray)route.get("sections");
+                    JSONObject section = (JSONObject)sections.get(0);
+                    JSONObject summary = (JSONObject)section.get("summary");
+                    Object length = summary.get("length");
+                    if (length instanceof  Number){
+                        return ((Number)length).doubleValue()/1000.0;
+                    }
+                } catch (Exception ex) {
+                    //
+                }
+            }
+            return GeoSP.distance(lat1, lng1, lat2, lng2);
         }
     }
 }
