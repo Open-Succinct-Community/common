@@ -439,7 +439,7 @@ public class GeoCoder {
 
             if (!ObjectUtil.isVoid(appKey)) {
                 try {
-                    String url = String.format("https://router.api.here.com/v8/routes?transportMode=%s&apiKey=%s&origin=%f,%f&destination=%f,%f&return=summary",
+                    String url = String.format("https://router.hereapi.com/v8/routes?transportMode=%s&apiKey=%s&origin=%f,%f&destination=%f,%f&return=summary",
                             URLEncoder.encode(params.getOrDefault("transportMode", "car")),
                             URLEncoder.encode(appKey, "UTF-8"),
                             lat1.floatValue(), lng1.floatValue(),
