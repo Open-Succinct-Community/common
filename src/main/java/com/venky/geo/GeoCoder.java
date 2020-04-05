@@ -68,7 +68,19 @@ public class GeoCoder {
     }
 
     Collection<GeoSP> sps = null;
-
+    public boolean isEnabled(Map<String,String> params){
+        if (preferredServiceProvider != null){
+            return preferredServiceProvider.isEnabled(params);
+        }else {
+            for (String spName: availableSps.keySet()){
+                GeoSP sp = availableSps.get(spName);
+                if (sp != null && sp.isEnabled(params)){
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
     public GeoLocation getLocation(String address, Map<String, String> params) {
         if (preferredServiceProvider == null) {
             sps = Arrays.asList(availableSps.get("here"), availableSps.get("openstreetmap"), availableSps.get("google"));
@@ -113,12 +125,16 @@ public class GeoCoder {
 
         public GeoAddress getAddress(GeoLocation geoLocation, Map<String, String> params);
 
+        public boolean isEnabled(Map<String, String> params);
+
         default Double getDrivingDistance(BigDecimal lat1, BigDecimal lng1, BigDecimal lat2, BigDecimal lng2, Map<String, String> params){
             return distance(lat1,lng1,lat2,lng2);
         }
         public static Double distance(BigDecimal lat1, BigDecimal lng1, BigDecimal lat2, BigDecimal lng2){
             return new GeoCoordinate(lat1, lng1).distanceTo(new GeoCoordinate(lat2, lng2));
         }
+
+
     }
 
     public static class GeoAddress {
@@ -146,6 +162,10 @@ public class GeoCoder {
         private static final String REVERSE_GEOCODE_URL = 
                 "https://maps.googleapis.com/maps/api/geocode/xml?latlng=%f,%f&key=%s";
 
+        @Override
+        public boolean isEnabled(Map<String, String> params) {
+            return !ObjectUtil.isVoid(params.get("google.api_key"));
+        }
         public GeoLocation getLocation(String address, Map<String, String> params) {
             try {
                 String apiKey = params.get("google.api_key");
@@ -223,6 +243,7 @@ public class GeoCoder {
             }
             return null;
         }
+
 
     }
 
@@ -316,25 +337,38 @@ public class GeoCoder {
             }
 
         }
+
+        @Override
+        public boolean isEnabled(Map<String, String> params) {
+            return true;
+        }
     }
 
     private static class Here implements GeoSP {
+        @Override
+        public boolean isEnabled(Map<String, String> params) {
+            return getGeoCodingUrl("",params) != null;
+        }
 
-        private String getGeoCodingUrl(String address,Map<String,String> params)throws UnsupportedEncodingException{
-            String appKey = params.get("here.app_key");                
-            String appId = params.get("here.app_id");
-            String appCode = params.get("here.app_code");
-            if (!ObjectUtil.isVoid(appKey)){
-                return String.format("https://geocoder.ls.hereapi.com/6.2/geocode.json?apiKey=%s&searchtext=%s",
-                        URLEncoder.encode(appKey,"UTF-8"),
-                        URLEncoder.encode(address,"UTF-8"));
-            }else if (!ObjectUtil.isVoid(appCode)) {
-                return String.format("https://geocoder.api.here.com/6.2/geocode.json?app_id=%s&app_code=%s&searchtext=%s",
-                        URLEncoder.encode(appId,"UTF-8"),
-                        URLEncoder.encode(appCode,"UTF-8"),
-                        URLEncoder.encode(address,"UTF-8"));
-            }else {
+        private String getGeoCodingUrl(String address, Map<String,String> params){
+            try {
+                String appKey = params.get("here.app_key");
+                String appId = params.get("here.app_id");
+                String appCode = params.get("here.app_code");
+                if (!ObjectUtil.isVoid(appKey)){
+                    return String.format("https://geocoder.ls.hereapi.com/6.2/geocode.json?apiKey=%s&searchtext=%s",
+                            URLEncoder.encode(appKey,"UTF-8"),
+                            URLEncoder.encode(address,"UTF-8"));
+                }else if (!ObjectUtil.isVoid(appCode)) {
+                    return String.format("https://geocoder.api.here.com/6.2/geocode.json?app_id=%s&app_code=%s&searchtext=%s",
+                            URLEncoder.encode(appId,"UTF-8"),
+                            URLEncoder.encode(appCode,"UTF-8"),
+                            URLEncoder.encode(address,"UTF-8"));
+                }else {
                     return null;
+                }
+            }catch (Exception ex){
+                throw new RuntimeException(ex);
             }
         }
 
