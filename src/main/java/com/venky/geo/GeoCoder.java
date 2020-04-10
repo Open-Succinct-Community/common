@@ -158,7 +158,7 @@ public class GeoCoder {
 
     private static class Google implements GeoSP {
 
-        private static final String WSURL = "http://maps.googleapis.com/maps/api/geocode/xml?sensor=false&key=%saddress=%s";
+        private static final String WSURL = "https://maps.googleapis.com/maps/api/geocode/xml?sensor=false&key=%s&address=%s";
         private static final String REVERSE_GEOCODE_URL = 
                 "https://maps.googleapis.com/maps/api/geocode/xml?latlng=%f,%f&key=%s";
 
