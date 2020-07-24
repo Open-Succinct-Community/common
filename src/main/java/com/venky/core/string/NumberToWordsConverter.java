@@ -55,6 +55,9 @@ public class NumberToWordsConverter {
 		this.number = number;
 		if (this.number == 0){
 			words.append("ZERO");
+		}else if (this.number < 0){
+			words.append("MINUS ");
+			fillWords(this.number * -1);
 		}else {
 			fillWords(this.number);
 		}
