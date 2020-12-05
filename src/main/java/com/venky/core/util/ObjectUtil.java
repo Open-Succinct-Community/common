@@ -8,8 +8,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.ObjectStreamClass;
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -74,7 +76,17 @@ public class ObjectUtil {
 		try {
 			ObjectOutputStream os = new ObjectOutputStream(baos);
 			os.writeObject(v);
-			is = new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()));
+			is = new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray())){
+				@Override
+				protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+					Class<?> clazz = Class.forName(desc.getName(),false,v.getClass().getClassLoader());
+					if (clazz != null){
+						return clazz;
+					}else {
+						return super.resolveClass(desc);
+					}
+				}
+			};
 			return (V)is.readObject();
 		} catch (Exception e) {
 			if (is != null){

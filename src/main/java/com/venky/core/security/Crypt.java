@@ -1,5 +1,6 @@
 package com.venky.core.security;
 
+import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -8,6 +9,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
+import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
@@ -82,18 +84,21 @@ public class Crypt {
         signature.update(payload.getBytes());
         return Base64.getEncoder().encodeToString(signature.sign());
     }
-    public boolean verifySignature(String payload, String signature, String base64PublicKey)throws Exception{
+    public boolean verifySignature(String payload, String signature, String base64PublicKey){
         return verifySignature(payload,signature,getPublicKey(base64PublicKey));
 
     }
-    public boolean verifySignature(String payload, String signature, PublicKey pKey)throws Exception{
+    public boolean verifySignature(String payload, String signature, PublicKey pKey){
         byte [] data = payload.getBytes();
         byte [] signatureBytes = Base64.getDecoder().decode(signature);
-        Signature s = Signature.getInstance("SHA256withRSA");
-        s.initVerify(pKey);
-        s.update(data);
-        return s.verify(signatureBytes);
-
+        try {
+            Signature s = Signature.getInstance("SHA256withRSA");
+            s.initVerify(pKey);
+            s.update(data);
+            return s.verify(signatureBytes);
+        }catch (Exception ex){
+            throw new RuntimeException(ex);
+        }
     }
 
 }
