@@ -356,7 +356,7 @@ public class GeoCoder {
                 String appId = params.get("here.app_id");
                 String appCode = params.get("here.app_code");
                 if (!ObjectUtil.isVoid(appKey)){
-                    return String.format("https://geocoder.ls.hereapi.com/6.2/geocode.json?apiKey=%s&searchtext=%s",
+                    return String.format("https://geocode.search.hereapi.com/v1/geocode.json?apiKey=%s&q=%s",
                             URLEncoder.encode(appKey,"UTF-8"),
                             URLEncoder.encode(address,"UTF-8"));
                 }else if (!ObjectUtil.isVoid(appCode)) {
