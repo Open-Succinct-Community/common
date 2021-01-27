@@ -51,7 +51,7 @@ public class ObjectUtil {
             }
             for (int i = 0 ; i < namevalues.length ; i = i + 2){
                 if (lowercase){
-                    p.setProperty(namevalues[i].toLowerCase(), namevalues[i+1].toLowerCase());
+                    p.setProperty(namevalues[i].toLowerCase(), namevalues[i+1]);
                 }else {
                     p.setProperty(namevalues[i], namevalues[i+1]);
                 }
