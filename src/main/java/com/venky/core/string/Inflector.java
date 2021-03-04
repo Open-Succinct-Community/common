@@ -25,6 +25,7 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.venky.core.collections.IgnoreCaseList;
 import com.venky.core.collections.LowerCaseStringCache;
 import com.venky.core.collections.UpperCaseStringCache;
 
@@ -37,7 +38,7 @@ public class Inflector {
         singulars = new ArrayList<String[]>();
         plurals = new ArrayList<String[]>();
         irregulars = new ArrayList<String[]>();
-        uncountables = new ArrayList<String>();
+        uncountables = new IgnoreCaseList();
 
         addPlural("$", "s");
         addPlural("s$", "s");
@@ -90,7 +91,7 @@ public class Inflector {
         addIrregular("sex", "sexes");
         addIrregular("move", "moves");
 
-        uncountables = Arrays.asList("equipment", "information", "rice", "money", "species", "series", "fish", "sheep");
+        uncountables.addAll(Arrays.asList("equipment", "information", "rice", "money", "species", "series", "fish", "sheep"));
     }
 
     public static void addPlural(String rule, String replacement){
