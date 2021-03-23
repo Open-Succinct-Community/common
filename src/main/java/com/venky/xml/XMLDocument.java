@@ -42,6 +42,19 @@ public class XMLDocument {
         document.appendChild(documentRoot.getInner());
     }
 
+    public void remove(XMLElement element){
+        document.removeChild(element.getInner());
+    }
+    public void append(XMLElement element){
+        if (element.getOwnerDocument() != document){
+            Node node = document.importNode(element.getInner(),true);
+            document.appendChild(node);
+        }else {
+            document.appendChild(element.getInner());
+        }
+        documentRoot=new XMLElement(this,document.getDocumentElement());
+    }
+
     public XMLDocument(XMLElement element){
         document = builder.newDocument();
         Node documentRoot = document.importNode(element.getInner(),true);
