@@ -31,9 +31,9 @@ public class Locker {
 		}
 	};
 	
-	public static enum LockMode {
+	public enum LockMode {
 		EXCLUSIVE,
-		READ;
+		READ
 	}
 	
 	public Lock getLock(String lockName,LockMode mode){
