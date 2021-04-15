@@ -1,8 +1,6 @@
 package com.venky.core.security;
 
 import com.venky.core.util.ObjectUtil;
-
-import com.venky.core.security.Crypt;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -51,7 +49,8 @@ public class SignatureComputer {
 
 
 
-        String sign = Crypt.getInstance().generateSignature(Base64.getEncoder().encodeToString(payload.toString().getBytes()), Crypt.getInstance().getPrivateKey(cmd.getOptionValue("base64privatekey")));
+        String sign = Crypt.getInstance().generateSignature(Base64.getEncoder().encodeToString(payload.toString().getBytes()),Crypt.SIGNATURE_ALGO,
+                Crypt.getInstance().getPrivateKey(Crypt.KEY_ALGO,cmd.getOptionValue("base64privatekey")));
         System.out.println(sign);
     }
 }
