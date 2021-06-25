@@ -94,7 +94,7 @@ public class Crypt {
     }
     */
 
-    public String generateSignature(String payload, String signatureAlgoritm , PrivateKey privateKey) throws  Exception{
+    public String generateSignature(String payload, String signatureAlgoritm , PrivateKey privateKey) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         Signature signature = Signature.getInstance(signatureAlgoritm); //
         signature.initSign(privateKey);
         signature.update(payload.getBytes());
