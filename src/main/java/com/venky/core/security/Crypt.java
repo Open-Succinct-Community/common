@@ -170,16 +170,30 @@ public class Crypt {
         }
     }
 
-    public String digest(String algorithm,String payload){
+    public byte[] digest(String algorithm,String payload){
         try {
             MessageDigest digest = MessageDigest.getInstance(algorithm, provider);
             digest.reset();
             digest.update(payload.getBytes(StandardCharsets.UTF_8));
-            byte[] hash = digest.digest();
-            return Base64.getEncoder().encodeToString(hash);
+            return digest.digest();
         }catch (Exception ex){
             throw new RuntimeException(ex);
         }
+    }
+    public String toBase64(byte[] bytes) {
+        return Base64.getEncoder().encodeToString(bytes);
+    }
+    public String toHex(byte[] bytes){
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0 ; i< bytes.length ; i++ ){
+            String hex = Integer.toHexString(bytes[i]);
+            if (hex.length() == 1){
+                hex = "0"+hex;
+            }
+            hex = hex.substring(hex.length()-2);
+            builder.append(hex);
+        }
+        return builder.toString();
     }
 
 }
