@@ -34,14 +34,19 @@ public class Crypt {
     private Crypt(String provider){
         this.provider = provider;
     }
-    static Cache<String,Crypt> cachedInstancesByProvider = new Cache<String, Crypt>() {
-        @Override
-        protected Crypt getValue(String provider) {
-            return new Crypt(provider);
-        }
-    };
+    static ThreadLocal<Cache<String,Crypt>> cachedInstancesByProvider = new ThreadLocal<>();
     public static Crypt getInstance(String provider) {
-        return cachedInstancesByProvider.get(provider);
+        Cache<String,Crypt> cache = cachedInstancesByProvider.get();
+        if (cache == null){
+            cache = new Cache<String, Crypt>() {
+                @Override
+                protected Crypt getValue(String provider) {
+                    return new Crypt(provider);
+                }
+            };
+            cachedInstancesByProvider.set(cache);
+        }
+        return cache.get(provider);
     }
     public static Crypt getInstance() {
         return getInstance(BouncyCastleProvider.PROVIDER_NAME);
@@ -119,14 +124,11 @@ public class Crypt {
         }
     }
 
-    Cache<String, ThreadLocal<Cipher>> cipherCache = new Cache<String, ThreadLocal<Cipher>>() {
+    Cache<String, Cipher> cipherCache = new Cache<String, Cipher>() {
         @Override
-        protected ThreadLocal<Cipher> getValue(String algorithm) {
+        protected Cipher getValue(String algorithm) {
             try {
-                Cipher cipher = Cipher.getInstance(algorithm,provider);
-                ThreadLocal tl = new ThreadLocal<>();
-                tl.set(cipher);
-                return tl;
+                return Cipher.getInstance(algorithm,provider);
             }catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
@@ -134,7 +136,7 @@ public class Crypt {
     };
 
     public String encrypt(String decrypted, String algorithm, Key key){
-        Cipher cipher = cipherCache.get(algorithm).get();
+        Cipher cipher = cipherCache.get(algorithm);
         try {
             cipher.init(Cipher.ENCRYPT_MODE, key);
             byte[] encrypted = cipher.doFinal(decrypted.getBytes(StandardCharsets.UTF_8));
@@ -153,7 +155,7 @@ public class Crypt {
     }
     public String decrypt(String encrypted, String algorithm , Key key){
         try {
-            Cipher cipher = cipherCache.get(algorithm).get();
+            Cipher cipher = cipherCache.get(algorithm);
             cipher.init(Cipher.DECRYPT_MODE, key);
             byte[] decrypted = cipher.doFinal(Base64.getDecoder().decode(encrypted.getBytes(StandardCharsets.UTF_8)));
             return new String(decrypted);
