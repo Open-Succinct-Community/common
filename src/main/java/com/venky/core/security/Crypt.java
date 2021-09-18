@@ -11,6 +11,7 @@ import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
@@ -169,5 +170,16 @@ public class Crypt {
         }
     }
 
+    public String digest(String algorithm,String payload){
+        try {
+            MessageDigest digest = MessageDigest.getInstance(algorithm, provider);
+            digest.reset();
+            digest.update(payload.getBytes(StandardCharsets.UTF_8));
+            byte[] hash = digest.digest();
+            return Base64.getEncoder().encodeToString(hash);
+        }catch (Exception ex){
+            throw new RuntimeException(ex);
+        }
+    }
 
 }
