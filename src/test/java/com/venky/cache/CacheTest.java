@@ -77,7 +77,7 @@ public class CacheTest {
 	}
 	
 	@SuppressWarnings("unused")
-	private static class ListInvocationHandler<T> implements InvocationHandler {
+	public static class ListInvocationHandler<T> implements InvocationHandler {
 		private List<T> inner ; 
 		public ListInvocationHandler() {
 		
