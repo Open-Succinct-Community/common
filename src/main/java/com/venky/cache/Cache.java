@@ -200,7 +200,7 @@ public abstract class Cache<K,V> implements ICache<V> , Mergeable<Cache<K,V>> , 
 
 	@Override
 	public void putAll(Map<? extends K, ? extends V> m) {
-		for (Entry<K,V> e: entrySet()){ 
+		for (Entry<? extends K, ? extends V> e: m.entrySet()){
 			put(e.getKey(),e.getValue());
 		}
 	}
