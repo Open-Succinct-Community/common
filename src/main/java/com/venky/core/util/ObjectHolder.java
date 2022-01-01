@@ -8,11 +8,16 @@ public class ObjectHolder<T> {
     }
 
     public T get() {
-        return object;
+        synchronized (this) {
+            return object;
+        }
     }
 
     public void set(T object) {
-        this.object = object;
+        synchronized (this){
+            this.object = object;
+            this.notifyAll();
+        }
     }
 
 }
