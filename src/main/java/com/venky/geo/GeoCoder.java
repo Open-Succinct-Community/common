@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -81,14 +82,33 @@ public class GeoCoder {
             return false;
         }
     }
-    public GeoLocation getLocation(String address, Map<String, String> params) {
+    public Collection<GeoSP> getSps(){
+        loadSps();
+        return sps;
+    }
+    private void loadSps(){
+        if (sps != null){
+            return;
+        }
         if (preferredServiceProvider == null) {
             sps = Arrays.asList(availableSps.get("here"), availableSps.get("openstreetmap"), availableSps.get("google"));
         } else {
             sps = Arrays.asList(preferredServiceProvider);
         }
-        for (GeoSP sp : sps) {
+    }
+    public GeoLocation getLocation(String address, Map<String, String> params) {
+        for (GeoSP sp : getSps()) {
             GeoLocation loc = sp.getLocation(address, params);
+            if (loc != null) {
+                Logger.getLogger(GeoCoder.class.getName()).info("Lat,Lon found using " + sp.getClass().getSimpleName());
+                return loc;
+            }
+        }
+        return null;
+    }
+    public GeoAddress getAddress(GeoLocation gps, Map<String, String> params) {
+        for (GeoSP sp : getSps()) {
+            GeoAddress loc = sp.getAddress(gps, params);
             if (loc != null) {
                 Logger.getLogger(GeoCoder.class.getName()).info("Lat,Lon found using " + sp.getClass().getSimpleName());
                 return loc;
@@ -101,12 +121,8 @@ public class GeoCoder {
         return getDrivingDistanceKms(l1.getLat(),l1.getLng(),l2.getLat(),l2.getLng(),params);
     }
     public Double getDrivingDistanceKms(BigDecimal lat1, BigDecimal lng1, BigDecimal lat2, BigDecimal lng2, Map<String,String> params){
-        if (preferredServiceProvider == null){
-            sps = Arrays.asList(availableSps.get("here"), availableSps.get("openstreetmap"), availableSps.get("google"));
-        }else {
-            sps = Arrays.asList(preferredServiceProvider);
-        }
-        for (GeoSP sp :sps){
+
+        for (GeoSP sp :getSps()){
             Double distance = sp.getDrivingDistance(lat1,lng1,lat2,lng2,params);
             if (distance != null){
                 Logger.getLogger(GeoCoder.class.getName()).info("Distance found using " + sp.getClass().getSimpleName());
