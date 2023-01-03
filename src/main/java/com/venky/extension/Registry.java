@@ -2,6 +2,7 @@ package com.venky.extension;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Logger;
 
 import com.venky.core.collections.SequenceSet;
 
@@ -16,6 +17,7 @@ public class Registry {
 	}
 	private HashMap<String, List<Extension>> extensionsMap = new HashMap<String, List<Extension>>();
 	public void registerExtension(String name,Extension extension){
+		Logger.getLogger(getClass().getName()).info("Registering extension "  + name + " with " +extension.getClass().getName());
 		List<Extension> extensions = getExtensions(name);
 		extensions.add(extension);
 	}
@@ -38,6 +40,7 @@ public class Registry {
 	}
 	
 	public void callExtensions(String pointName, Object... context){
+		Logger.getLogger(getClass().getName()).info("Calling extensions "  + pointName);
 		for (Extension extn : getExtensions(pointName)){
 			extn.invoke(context);
 		}
