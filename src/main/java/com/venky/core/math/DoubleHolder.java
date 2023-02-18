@@ -1,6 +1,7 @@
 package com.venky.core.math;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class DoubleHolder implements Comparable<DoubleHolder>{
 	private transient BigDecimal held ;
@@ -19,7 +20,7 @@ public class DoubleHolder implements Comparable<DoubleHolder>{
 	
 	private BigDecimal createBigDecimal(final double d1, final int scale){
 		BigDecimal bd1 = new BigDecimal(d1);
-		bd1 = bd1.setScale(scale, BigDecimal.ROUND_HALF_UP);
+		bd1 = bd1.setScale(scale, RoundingMode.HALF_UP);
 		return bd1;
 	}
 	public boolean equals(final Object o){

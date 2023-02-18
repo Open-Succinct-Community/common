@@ -26,7 +26,7 @@ import java.util.Base64;
 public class Crypt {
     static {
         if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null){
-            Security.addProvider(new BouncyCastleProvider());
+            Security.insertProviderAt(new BouncyCastleProvider(),1);
         }
     }
 
