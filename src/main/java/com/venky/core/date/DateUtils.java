@@ -40,14 +40,6 @@ public class DateUtils { // NOPMD by VMahadevan on 1/26/09 11:16 PM
         return diff;
     }
 
-    public static Date max(final Date d1, final Date d2) {
-        return (d1.compareTo(d2) < 0 ? d2 : d1);
-    }
-
-    public static Date min(final Date d1, final Date d2) {
-        return (d1.compareTo(d2) < 0 ? d1 : d2);
-    }
-
     public static Date addHours(final Date to, final int hours) {
         return new Date(addHours(to.getTime(), hours));
     }
@@ -259,4 +251,32 @@ public class DateUtils { // NOPMD by VMahadevan on 1/26/09 11:16 PM
 		c.setTime(date);
 		return DOW[c.get(Calendar.DAY_OF_WEEK)-1];
 	}
+
+    public static Date max(final Date... dates){
+        Date max = null ;
+        if (dates != null){
+            for (Date date: dates){
+                if (date != null) {
+                    if (max == null || max.compareTo(date) < 0 ) {
+                        max = date;
+                    }
+                }
+            }
+        }
+        return max;
+    }
+    public static Date min(final Date... dates){
+        Date min = null ;
+        if (dates != null){
+            for (Date date: dates){
+                if (date != null) {
+                    if (min == null || min.compareTo(date) > 0 ) {
+                        min = date;
+                    }
+                }
+            }
+        }
+        return min;
+    }
+
 }
