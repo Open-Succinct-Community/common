@@ -1,6 +1,7 @@
 package in.succinct.json;
 
 import com.venky.core.date.DateUtils;
+import com.venky.core.security.Crypt;
 import com.venky.core.util.MultiException;
 import com.venky.core.util.ObjectHolder;
 import com.venky.core.util.ObjectUtil;
@@ -501,4 +502,13 @@ public class JSONAwareWrapper<T extends JSONAware> implements Serializable {
         }
         return min;
     }
+
+    public String hash(){
+        return generateBlakeHash(toString());
+    }
+
+    public static String generateBlakeHash(String req) {
+        return Crypt.getInstance().toBase64(Crypt.getInstance().digest("BLAKE2B-512",req));
+    }
+
 }
