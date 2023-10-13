@@ -292,21 +292,54 @@ public class JSONAwareWrapper<T extends JSONAware> implements Serializable {
         getInnerObject().put(key,value);
     }
     public Date getTimestamp(String key){
+        return parseTimestamp(get(key));
+    }
+
+    public static Date parseTimestamp(String value){
+        return parseDateTime(value,TIMESTAMP_FORMATS);
+    }
+    public static Date parseDate(String value){
+        return parseDateTime(value,DATE_FORMAT);
+    }
+    public static Date parseTime(String value){
+        return parseDateTime(value,TIME_FORMAT);
+    }
+    public static Date parseDateTime(String value, DateFormat... formats){
+        if (value == null){
+            return null;
+        }
+
         MultiException multiException = new MultiException();
-        for (DateFormat f : TIMESTAMP_FORMATS){
+        for (DateFormat f : formats){
             try {
-                return getDate(key,f);
+                return f.parse(value);
             }catch (Exception ex){
                 multiException.add(ex);
             }
         }
         throw multiException;
     }
+
+    public static String formatDateTime(Date date, DateFormat... formats){
+        if (date == null){
+            return null;
+        }
+        MultiException multiException = new MultiException();
+        for (DateFormat f : formats){
+            try {
+                return f.format(date);
+            }catch (Exception ex){
+                multiException.add(ex);
+            }
+        }
+        throw multiException;
+    }
+
     public Date getDate(String key){
-        return getDate(key,DATE_FORMAT);
+        return parseDate(get(key));
     }
     public Date getTime(String key){
-        return getDate(key,TIME_FORMAT);
+        return parseTime(get(key));
     }
     public Date getDate(String key, DateFormat format){
         String value = get(key);

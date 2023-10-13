@@ -20,6 +20,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -29,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+
+import org.json.simple.parser.ParseException;
 import org.w3c.dom.DOMException;
 
 /**
@@ -397,7 +401,7 @@ public class GeoCoder {
                     URLConnection connection = u.openConnection();
                     connection.setConnectTimeout(5000);
                     connection.setReadTimeout(5000);
-                    JSONObject doc = (JSONObject) JSONValue.parse(new InputStreamReader(connection.getInputStream()));
+                    JSONObject doc = (JSONObject) JSONValue.parseWithException(new InputStreamReader(connection.getInputStream()));
                     JSONObject place = (JSONObject) doc.get("Response");
                     JSONArray views = (JSONArray) place.get("View");
                     JSONObject position = null;
@@ -453,7 +457,7 @@ public class GeoCoder {
 
                     conn.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
                     conn.addRequestProperty("User-Agent", "Mozilla");
-                    JSONObject doc = (JSONObject) JSONValue.parse(new InputStreamReader(conn.getInputStream()));
+                    JSONObject doc = (JSONObject) JSONValue.parseWithException(new InputStreamReader(conn.getInputStream()));
                     JSONObject place = (JSONObject) doc.get("Response");
                     JSONArray views = (JSONArray) place.get("View");
                     JSONObject addressparts = null;
@@ -472,7 +476,7 @@ public class GeoCoder {
                     }
                     return address;
                 }
-            } catch (IOException | DOMException ex) {
+            } catch (IOException | DOMException | ParseException ex) {
                 
             }
             return null;
@@ -490,8 +494,8 @@ public class GeoCoder {
             if (!ObjectUtil.isVoid(appKey)) {
                 try {
                     String url = String.format("https://router.hereapi.com/v8/routes?transportMode=%s&apiKey=%s&origin=%f,%f&destination=%f,%f&return=summary",
-                            URLEncoder.encode(params.getOrDefault("transportMode", "car")),
-                            URLEncoder.encode(appKey, "UTF-8"),
+                            URLEncoder.encode(params.getOrDefault("transportMode", "car"), StandardCharsets.UTF_8),
+                            URLEncoder.encode(appKey, StandardCharsets.UTF_8),
                             lat1.floatValue(), lng1.floatValue(),
                             lat2.floatValue(), lng2.floatValue());
 
@@ -502,7 +506,7 @@ public class GeoCoder {
 
                     conn.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
                     conn.addRequestProperty("User-Agent", "Mozilla");
-                    JSONObject out = (JSONObject) JSONValue.parse(new InputStreamReader(conn.getInputStream()));
+                    JSONObject out = (JSONObject) JSONValue.parseWithException(new InputStreamReader(conn.getInputStream()));
                     JSONArray routes = (JSONArray)out.get("routes");
                     JSONObject route = (JSONObject)routes.get(0);
                     JSONArray sections = (JSONArray)route.get("sections");

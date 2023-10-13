@@ -3,6 +3,7 @@ package in.succinct.json;
 import org.json.simple.JSONArray;
 
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Comparator;
 import java.util.Iterator;
 
@@ -14,10 +15,20 @@ public class ObjectWrappers<T> extends JSONAwareWrapper<JSONArray> implements It
     }
     protected ObjectWrappers(JSONArray value) {
         super(value);
-        ParameterizedType pt = (ParameterizedType)getClass().getGenericSuperclass();
-        this.clazz = (Class<T>) pt.getActualTypeArguments()[0];
+        clazz = getParameterizedType();
     }
+    protected Class<T> getParameterizedType(){
 
+        Class<?> inspectedClass = getClass();
+        Type type = inspectedClass.getGenericSuperclass();
+        while (!(ParameterizedType.class.isAssignableFrom(type.getClass()))){
+            inspectedClass = inspectedClass.getSuperclass();
+            type = inspectedClass.getGenericSuperclass();
+        }
+        ParameterizedType pt = (ParameterizedType)type;
+        return (Class<T>) pt.getActualTypeArguments()[0];
+
+    }
     protected ObjectWrappers(String payload) {
         super(payload);
         ParameterizedType pt = (ParameterizedType)getClass().getGenericSuperclass();
