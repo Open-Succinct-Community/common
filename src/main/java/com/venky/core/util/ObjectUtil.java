@@ -38,7 +38,7 @@ public class ObjectUtil {
             return true;
         }else if (o instanceof String){
             String s = (String)o; 
-            return (s.trim().length() == 0);
+            return (s.trim().isEmpty());
         }
         return false;
     }

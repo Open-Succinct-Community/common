@@ -13,6 +13,10 @@ public class ObjectWrappers<T> extends JSONAwareWrapper<JSONArray> implements It
     public Class<T> getElementType(){
         return clazz;
     }
+
+    protected ObjectWrappers(){
+        this(new JSONArray());
+    }
     protected ObjectWrappers(JSONArray value) {
         super(value);
         clazz = getParameterizedType();

@@ -90,6 +90,7 @@ public class JSONAwareWrapper<T extends JSONAware> implements Serializable {
 
 
     public static class JSONAwareWrapperCreator implements Serializable {
+
         @SuppressWarnings("all")
         public <B> B create(Class<B> clazz){
             try {
@@ -271,7 +272,7 @@ public class JSONAwareWrapper<T extends JSONAware> implements Serializable {
         for (DateFormat t : TIMESTAMP_FORMATS ){
             t.setTimeZone(TimeZone.getTimeZone("UTC"));
         }
-        TIME_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
+        //TIME_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
     }
 
 
