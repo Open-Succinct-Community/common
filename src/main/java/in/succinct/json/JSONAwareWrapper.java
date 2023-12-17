@@ -483,6 +483,12 @@ public class JSONAwareWrapper<T extends JSONAware> implements Serializable {
             }
         }
     }
+    public void remove(int index){
+        JSONAware inner = getInner();
+        if (inner instanceof JSONArray){
+            ((JSONArray)inner).remove(index);
+        }
+    }
     public void clear(){
         JSONAware inner = getInner();
         if (inner instanceof JSONObject){
