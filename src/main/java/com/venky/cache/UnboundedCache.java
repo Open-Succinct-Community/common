@@ -4,6 +4,14 @@ import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class UnboundedCache<K,V> extends ConcurrentHashMap<K, V> {
+	private final boolean blockingGetValue ;
+ 	public UnboundedCache(){
+		this(false);
+	}
+	public UnboundedCache(boolean blockingGetValue){
+		 super();
+		 this.blockingGetValue = blockingGetValue;
+	}
 
 	/**
 	 * 
@@ -13,17 +21,23 @@ public abstract class UnboundedCache<K,V> extends ConcurrentHashMap<K, V> {
 	public V get(Object key){
 		K k = (K)key;
 		V v = super.get(k);
-		if (v == null){
-			v = getValue(k); //Wastful getValue is better than blocking GetValue.
-			if (v != null){
-				synchronized (this){
-					V vExisting = super.get(k);
-					if (vExisting == null){
-						super.put(k, v);
-					}else {
-						v = vExisting;
-					}
+		if (v != null){
+			return v;
+		}
+		if (!blockingGetValue){
+			v = getValue(k);
+		}
+		synchronized (this){
+			V vExisting = super.get(k);
+			if (vExisting == null){
+				if (blockingGetValue) {
+					v = getValue(k);
 				}
+				if (v != null) {
+					super.put(k, v);
+				}
+			}else {
+				v = vExisting;
 			}
 		}
 		return v;
