@@ -258,10 +258,11 @@ public class JSONAwareWrapper<T extends JSONAware> implements Serializable {
 
     public static DateFormat TIMESTAMP_FORMAT_WITH_MILLS =  new SimpleDateFormat(DateUtils.ISO_8601_24H_FULL_FORMAT);
     public static DateFormat TIMESTAMP_FORMAT_WO_MILLIS = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+    public static DateFormat TIMESTAMP_FORMAT_WO_MILLIS_AND_WO_TZ = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
     public static DateFormat TIMESTAMP_FORMAT =  TIMESTAMP_FORMAT_WITH_MILLS;
 
-    public static final DateFormat[] TIMESTAMP_FORMATS = new DateFormat[] {TIMESTAMP_FORMAT_WITH_MILLS, TIMESTAMP_FORMAT_WO_MILLIS};
+    public static final DateFormat[] TIMESTAMP_FORMATS = new DateFormat[] {TIMESTAMP_FORMAT_WITH_MILLS, TIMESTAMP_FORMAT_WO_MILLIS, TIMESTAMP_FORMAT_WO_MILLIS_AND_WO_TZ};
 
     public static final DateFormat DATE_FORMAT = new SimpleDateFormat(DateUtils.ISO_DATE_FORMAT_STR);
     public static final DateFormat APP_DATE_FORMAT = new SimpleDateFormat(DateUtils.APP_DATE_FORMAT_STR);
