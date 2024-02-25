@@ -10,6 +10,8 @@ import org.json.simple.JSONAware;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.text.DateFormat;
@@ -39,6 +41,14 @@ public class JSONAwareWrapper<T extends JSONAware> implements Serializable {
     public static <T extends JSONAware> T parse(String payload){
         try {
             return (T) JSONValue.parseWithException(payload);
+        }catch (Exception ex){
+            throw new RuntimeException(ex);
+        }
+    }
+    @SuppressWarnings("unchecked")
+    public static <T extends JSONAware> T parse(InputStream payload){
+        try {
+            return (T) JSONValue.parseWithException(new InputStreamReader(payload));
         }catch (Exception ex){
             throw new RuntimeException(ex);
         }
