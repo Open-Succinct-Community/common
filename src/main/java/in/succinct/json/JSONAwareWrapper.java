@@ -471,7 +471,7 @@ public class JSONAwareWrapper<T extends JSONAware> implements Serializable {
     public  <O> void add(O o, boolean reset){
         JSONArray inner = getInnerArray();
 
-        if (o instanceof JSONAwareWrapper){
+        if (o != null && o instanceof JSONAwareWrapper){
             inner.add(((JSONAwareWrapper)o).getInner());
         }else {
             inner.add(o);
