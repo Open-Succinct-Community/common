@@ -18,26 +18,29 @@ public class DateUtils { // NOPMD by VMahadevan on 1/26/09 11:16 PM
     public static long compareToMillis(final Date d1, final Date d2) {
         return compareToMillis(d1.getTime(), d2.getTime());
     }
+    public static long compareToMillis(final long millis1, final long millis2) {
+        return (millis1 - millis2);
+    }
 
     public static int compareToMinutes(final Date d1, final Date d2) {
         return compareToMinutes(d1.getTime(), d2.getTime());
     }
-    public static double compareToDMinutes(final Date d1, final Date d2) {
-        return compareToDMinutes(d1.getTime(), d2.getTime());
-    }
-    public static long compareToMillis(final long millis1, final long millis2) {
-        return (millis1 - millis2);
-    }
     public static int compareToMinutes(final long millis1, final long millis2) {
-    	return (int) Math.round(compareToDMinutes(millis1, millis2));
+        return (int) Math.round(compareToDMinutes(millis1, millis2));
     }
-    public static double compareToDMinutes(final long millis1, final long millis2) {
+    private static double compareToDMinutes(final long millis1, final long millis2) {
         final long millisecondDiff = compareToMillis(millis1, millis2);
 
         final double millisecondsInMinute = 60 * 1000.0;
 
         final double diff = (millisecondDiff) / millisecondsInMinute;
         return diff;
+    }
+    public static int compareToHours(final long millis1, final long millis2) {
+        return (int) Math.round(compareToDMinutes(millis1, millis2)/60.0);
+    }
+    public static int compareToDays(final long millis1, final long millis2) {
+        return (int)(Math.round(compareToDMinutes(millis1,millis2)/(24.0*60.0)));
     }
 
     public static Date addHours(final Date to, final int hours) {
@@ -130,6 +133,15 @@ public class DateUtils { // NOPMD by VMahadevan on 1/26/09 11:16 PM
         return calendar.getTimeInMillis();
 
     }
+    public static boolean isStartOfDay(Date date){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(date.getTime());
+
+        return calendar.get(Calendar.HOUR_OF_DAY) == 0 &&
+                calendar.get(Calendar.MINUTE) == 0 &&
+                calendar.get(Calendar.SECOND) == 0 &&
+                calendar.get(Calendar.MILLISECOND) == 0;
+    }
 
     public static long getEndOfDay(final long date) {
         final Calendar calendar = Calendar.getInstance();
@@ -139,6 +151,15 @@ public class DateUtils { // NOPMD by VMahadevan on 1/26/09 11:16 PM
         calendar.set(Calendar.SECOND, 59);
         calendar.set(Calendar.MILLISECOND, 999);
         return calendar.getTimeInMillis();
+    }
+    public static boolean isEndOfDay(Date date){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(date.getTime());
+
+        return calendar.get(Calendar.HOUR_OF_DAY) == 23 &&
+                calendar.get(Calendar.MINUTE) == 59 &&
+                calendar.get(Calendar.SECOND) == 59 &&
+                calendar.get(Calendar.MILLISECOND) == 999;
     }
 
     public static Date getEndOfDay(final Date date) {
