@@ -294,7 +294,7 @@ public class SequenceSet<E> implements Set<E> , Cloneable, List<E>{
 	}
 
 	public ListIterator<E> listIterator(int index) {
-		return new Itr(0);
+		return new Itr(index);
 	}
 
 	public List<E> subList(int fromIndex, int toIndex) {
