@@ -480,6 +480,20 @@ public class JSONAwareWrapper<T extends JSONAware> implements Serializable {
     public <O> void add(O o){
         add(o,false);
     }
+
+    public <O> void insert(int atIndex, O o){
+        insert(atIndex,o,false);
+    }
+    @SuppressWarnings("all")
+    public <O> void insert(int atIndex, O o , boolean reset){
+        JSONArray inner = getInnerArray();
+
+        if (o instanceof JSONAwareWrapper){
+            inner.add(atIndex,((JSONAwareWrapper)o).getInner());
+        }else {
+            inner.add(atIndex,o);
+        }
+    }
     @SuppressWarnings("all")
     public <O> void remove(O o){
         JSONAware inner = getInner();
