@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -30,7 +31,7 @@ import com.venky.core.io.ByteArrayInputStream;
  */
 public class ObjectUtil {
     public static boolean equals(Object o1, Object o2){
-        return (o1 == o2) || (o1 != null && o1.equals(o2));
+        return Objects.equals(o1, o2);
     }
     
     public static boolean isVoid(Object o){
