@@ -173,10 +173,13 @@ public class Crypt {
     }
 
     public byte[] digest(String algorithm,String payload){
+        return digest(algorithm,payload.getBytes(StandardCharsets.UTF_8));
+    }
+    public byte[] digest(String algorithm,byte[] data){
         try {
             MessageDigest digest = MessageDigest.getInstance(algorithm, provider);
             digest.reset();
-            digest.update(payload.getBytes(StandardCharsets.UTF_8));
+            digest.update(data);
             return digest.digest();
         }catch (Exception ex){
             throw new RuntimeException(ex);
