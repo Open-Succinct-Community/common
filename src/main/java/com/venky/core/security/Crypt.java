@@ -134,18 +134,7 @@ public class Crypt {
             }
         }
     };
-
-    public String encrypt(String decrypted, String algorithm, Key key){
-        Cipher cipher = cipherCache.get(algorithm);
-        try {
-            cipher.init(Cipher.ENCRYPT_MODE, key);
-            byte[] encrypted = cipher.doFinal(decrypted.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(encrypted);
-        }catch (Exception ex){
-            throw new RuntimeException(ex);
-        }
-    }
-
+    
     public String encrypt(String decrypted, String algorithm, String publicKey){
         try {
             return encrypt(decrypted,algorithm,getPublicKey(algorithm,publicKey));
@@ -153,20 +142,37 @@ public class Crypt {
             throw new RuntimeException(ex);
         }
     }
-    public String decrypt(String encrypted, String algorithm , Key key){
+    public String encrypt(String decrypted, String algorithm, Key key){
+        return encrypt(decrypted.getBytes(StandardCharsets.UTF_8),algorithm,key);
+    }
+    public String encrypt(byte[] decrypted, String algorithm, Key key){
+        Cipher cipher = cipherCache.get(algorithm);
         try {
-            Cipher cipher = cipherCache.get(algorithm);
-            cipher.init(Cipher.DECRYPT_MODE, key);
-            byte[] decrypted = cipher.doFinal(Base64.getDecoder().decode(encrypted.getBytes(StandardCharsets.UTF_8)));
-            return new String(decrypted);
+            cipher.init(Cipher.ENCRYPT_MODE, key);
+            byte[] encrypted = cipher.doFinal(decrypted);
+            return Base64.getEncoder().encodeToString(encrypted);
+        }catch (Exception ex){
+            throw new RuntimeException(ex);
+        }
+    }
+    
+    public String decrypt(String encrypted, String algorithm, String privateKey){
+        try {
+            return decrypt(encrypted,algorithm,getPrivateKey(algorithm,privateKey));
         }catch (Exception ex){
             throw new RuntimeException(ex);
         }
     }
 
-    public String decrypt(String encrypted, String algorithm, String privateKey){
+    public String decrypt(String encrypted, String algorithm , Key key){
+        return decrypt(encrypted.getBytes(StandardCharsets.UTF_8),algorithm,key);
+    }
+    public String decrypt(byte[] encrypted, String algorithm , Key key){
         try {
-            return decrypt(encrypted,algorithm,getPrivateKey(algorithm,privateKey));
+            Cipher cipher = cipherCache.get(algorithm);
+            cipher.init(Cipher.DECRYPT_MODE, key);
+            byte[] decrypted = cipher.doFinal(Base64.getDecoder().decode(encrypted));
+            return new String(decrypted);
         }catch (Exception ex){
             throw new RuntimeException(ex);
         }
