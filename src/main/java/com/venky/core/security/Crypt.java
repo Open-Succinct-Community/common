@@ -112,7 +112,9 @@ public class Crypt {
         }
     }
     public boolean verifySignature(String payload, String signature, String signatureAlgorithm ,PublicKey pKey){
-        byte [] data = payload.getBytes();
+        return verifySignature(payload.getBytes(StandardCharsets.UTF_8),signature,signatureAlgorithm,pKey);
+    }
+    public boolean verifySignature(byte[] data, String signature, String signatureAlgorithm ,PublicKey pKey){
         byte [] signatureBytes = Base64.getDecoder().decode(signature);
         try {
             Signature s = Signature.getInstance(signatureAlgorithm,provider);
@@ -123,7 +125,8 @@ public class Crypt {
             throw new RuntimeException(ex);
         }
     }
-
+    
+    
     Cache<String, Cipher> cipherCache = new Cache<String, Cipher>() {
         @Override
         protected Cipher getValue(String algorithm) {
