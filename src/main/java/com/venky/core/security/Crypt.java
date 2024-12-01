@@ -102,15 +102,20 @@ public class Crypt {
     public static final String SIGNATURE_ALGO = "SHA256withRSA";
 
     public String generateSignature(String payload, String signatureAlgorithm , PrivateKey privateKey)  {
+        return generateSignature(payload.getBytes(StandardCharsets.UTF_8),signatureAlgorithm,privateKey);
+    }
+    
+    public String generateSignature(byte[] payload, String signatureAlgorithm , PrivateKey privateKey)  {
         try {
             Signature signature = Signature.getInstance(signatureAlgorithm, provider); //
             signature.initSign(privateKey);
-            signature.update(payload.getBytes());
+            signature.update(payload);
             return Base64.getEncoder().encodeToString(signature.sign());
         }catch (Exception ex){
             throw new RuntimeException(ex);
         }
     }
+    
     public boolean verifySignature(String payload, String signature, String signatureAlgorithm ,PublicKey pKey){
         return verifySignature(payload.getBytes(StandardCharsets.UTF_8),signature,signatureAlgorithm,pKey);
     }
