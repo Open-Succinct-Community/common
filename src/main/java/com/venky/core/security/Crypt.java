@@ -55,8 +55,7 @@ public class Crypt {
 
     public String getBase64Encoded(Key key){
         byte[] encoded = key.getEncoded();
-        String b64Key = Base64.getEncoder().encodeToString(encoded);
-        return b64Key;
+        return Base64.getEncoder().encodeToString(encoded);
     }
     public SecretKey getSecretKey(String algo,String base64Key){
         return new SecretKeySpec(Base64.getDecoder().decode(base64Key),algo);
