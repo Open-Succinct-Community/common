@@ -52,6 +52,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class Crypt {
     static {
@@ -304,6 +305,13 @@ public class Crypt {
         return verifySignature(payload.getBytes(StandardCharsets.UTF_8),signature,signatureAlgorithm,pKey);
     }
     public boolean verifySignature(byte[] data, String signature, String signatureAlgorithm ,PublicKey pKey){
+        StringBuilder verificationDebugString = new StringBuilder();
+        verificationDebugString.append("Signature|").append(signature).append("|\n");
+        verificationDebugString.append("pKey|").append(Base64.getEncoder().encodeToString(pKey.getEncoded())).append("|\n");
+        verificationDebugString.append("data|").append(Base64.getEncoder().encodeToString(data)).append("|\n");
+        Logger.getLogger(getClass().getName()).info(verificationDebugString.toString());
+        
+        
         byte [] signatureBytes = Base64.getDecoder().decode(signature);
         try {
             Signature s = Signature.getInstance(signatureAlgorithm,provider);
