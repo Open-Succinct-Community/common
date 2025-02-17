@@ -4,6 +4,7 @@
  */
 package com.venky.geo;
 
+import com.venky.core.collections.SequenceSet;
 import com.venky.core.string.StringUtil;
 import com.venky.core.util.ObjectUtil;
 import com.venky.xml.XMLDocument;
@@ -11,6 +12,8 @@ import com.venky.xml.XMLElement;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
+import org.w3c.dom.DOMException;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -20,50 +23,61 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-
-import org.json.simple.parser.ParseException;
-import org.w3c.dom.DOMException;
 
 /**
  *
  * @author venky
  */
 public class GeoCoder {
-
-    private static final Map<String, GeoSP> availableSps = new HashMap<String, GeoSP>();
-
-    static {
-        //registerGeoSP("yahoo",new Yahoo());
-        registerGeoSP("google", new Google());
-        registerGeoSP("openstreetmap", new Nominatim());
-        registerGeoSP("here", new Here());
+    private static volatile GeoCoder sSoleInstance;
+    
+    //private constructor.
+    private GeoCoder() {
+        //Prevent form the reflection api.
+        if (sSoleInstance != null) {
+            throw new RuntimeException("Use getInstance() method to get the single instance of this class.");
+        }
+        registerGeoSP(new Google());
+        registerGeoSP(new Here());
+        registerGeoSP(new Nominatim());
+        
     }
-
-    private static void registerGeoSP(String sp, GeoSP geoSP) {
-        availableSps.put(sp, geoSP);
+    
+    public static GeoCoder getInstance() {
+        if (sSoleInstance == null) { //if there is no instance available... create new one
+            synchronized (GeoCoder.class) {
+                if (sSoleInstance == null) sSoleInstance = new GeoCoder();
+            }
+        }
+        
+        return sSoleInstance;
     }
-
-    private GeoSP preferredServiceProvider = null;
-
-    public GeoCoder(String preferedSP) {
-        preferredServiceProvider = availableSps.get(preferedSP);
+    
+    //Make singleton from serialize and deserialize operation.
+    protected GeoCoder readResolve() {
+        return getInstance();
     }
+    
 
-    public GeoCoder() {
-        this(null);
+    private final SequenceSet<GeoSP> availableSps = new SequenceSet<>();
+    
+    public void clear(){
+        availableSps.clear();
     }
-
+    public void registerGeoSP( GeoSP geoSP) {
+        availableSps.add(geoSP);
+    }
+    public void registerFirstGeoSP( GeoSP geoSP) {
+        availableSps.add(0,geoSP);
+    }
+    
     public void fillGeoInfo(String address, GeoLocation location, Map<String, String> params) {
         GeoLocation result = getLocation(address, params);
         if (result != null) {
@@ -72,33 +86,16 @@ public class GeoCoder {
         }
     }
 
-    Collection<GeoSP> sps = null;
     public boolean isEnabled(Map<String,String> params){
-        if (preferredServiceProvider != null){
-            return preferredServiceProvider.isEnabled(params);
-        }else {
-            for (String spName: availableSps.keySet()){
-                GeoSP sp = availableSps.get(spName);
-                if (sp != null && sp.isEnabled(params)){
-                    return true;
-                }
+        for (GeoSP sp : getSps()){
+            if (sp.isEnabled(params)){
+                return true;
             }
-            return false;
         }
+        return false;
     }
     public Collection<GeoSP> getSps(){
-        loadSps();
-        return sps;
-    }
-    private void loadSps(){
-        if (sps != null){
-            return;
-        }
-        if (preferredServiceProvider == null) {
-            sps = Arrays.asList(availableSps.get("here"), availableSps.get("openstreetmap"), availableSps.get("google"));
-        } else {
-            sps = Arrays.asList(preferredServiceProvider);
-        }
+        return availableSps;
     }
     public GeoLocation getLocation(String address, Map<String, String> params) {
         for (GeoSP sp : getSps()) {
@@ -122,12 +119,8 @@ public class GeoCoder {
     }
 
     public Double getDrivingDistanceKms(GeoLocation l1, GeoLocation l2, Map<String,String> params){
-        return getDrivingDistanceKms(l1.getLat(),l1.getLng(),l2.getLat(),l2.getLng(),params);
-    }
-    public Double getDrivingDistanceKms(BigDecimal lat1, BigDecimal lng1, BigDecimal lat2, BigDecimal lng2, Map<String,String> params){
-
         for (GeoSP sp :getSps()){
-            Double distance = sp.getDrivingDistance(lat1,lng1,lat2,lng2,params);
+            Double distance = sp.getDrivingDistance(l1,l2,params);
             if (distance != null){
                 Logger.getLogger(GeoCoder.class.getName()).info("Distance found using " + sp.getClass().getSimpleName());
                 return distance;
@@ -135,25 +128,22 @@ public class GeoCoder {
         }
         return null;
     }
-    public Double distanceKms(GeoLocation l1, GeoLocation l2){
-        return new GeoCoordinate(l1).distanceTo(new GeoCoordinate(l2));
-    }
 
-    private static interface GeoSP {
-
+    public interface GeoSP {
+        
+        default String getName(){
+            return getClass().getName().toLowerCase();
+        }
+        
         public GeoLocation getLocation(String address, Map<String, String> params);
 
         public GeoAddress getAddress(GeoLocation geoLocation, Map<String, String> params);
 
         public boolean isEnabled(Map<String, String> params);
 
-        default Double getDrivingDistance(BigDecimal lat1, BigDecimal lng1, BigDecimal lat2, BigDecimal lng2, Map<String, String> params){
-            return distance(lat1,lng1,lat2,lng2);
+        default Double getDrivingDistance(GeoLocation l1, GeoLocation l2, Map<String,String> params){
+            return new GeoCoordinate(l1).distanceTo(new GeoCoordinate(l2));
         }
-        public static Double distance(BigDecimal lat1, BigDecimal lng1, BigDecimal lat2, BigDecimal lng2){
-            return new GeoCoordinate(lat1, lng1).distanceTo(new GeoCoordinate(lat2, lng2));
-        }
-
 
     }
 
@@ -176,8 +166,8 @@ public class GeoCoder {
         }
     }
 
-    private static class Google implements GeoSP {
-
+    public static class Google implements GeoSP {
+        
         private static final String WSURL = "https://maps.googleapis.com/maps/api/geocode/xml?sensor=false&key=%s&address=%s";
         private static final String REVERSE_GEOCODE_URL = 
                 "https://maps.googleapis.com/maps/api/geocode/xml?latlng=%f,%f&key=%s";
@@ -267,7 +257,7 @@ public class GeoCoder {
 
     }
 
-    private static class Nominatim implements GeoSP {
+    public static class Nominatim implements GeoSP {
 
         private static final String WSURL = "https://nominatim.openstreetmap.org/search?format=xml&polygon=0&q=%s";
         private static final String REVERSE_GEO_CODE_URL
@@ -364,7 +354,7 @@ public class GeoCoder {
         }
     }
 
-    private static class Here implements GeoSP {
+    public static class Here implements GeoSP {
         @Override
         public boolean isEnabled(Map<String, String> params) {
             return getGeoCodingUrl("",params) != null;
@@ -483,7 +473,7 @@ public class GeoCoder {
         }
 
         @Override
-        public Double getDrivingDistance(BigDecimal lat1, BigDecimal lng1, BigDecimal lat2, BigDecimal lng2, Map<String, String> params)  {
+        public Double getDrivingDistance(GeoLocation l1, GeoLocation l2, Map<String, String> params)  {
             String appKey = params.get("here.app_key");
             /*
             curl 'https://router.hereapi.com/v8/routes?transportMode=car&origin=12.902987,77.599674&destination=13.198533,77.707956&return=summary&apiKey=4Su9WUwZJ7_dvMn1uDJDs0IoSgDltWlI6Efm4CPnfBM'
@@ -496,8 +486,8 @@ public class GeoCoder {
                     String url = String.format("https://router.hereapi.com/v8/routes?transportMode=%s&apiKey=%s&origin=%f,%f&destination=%f,%f&return=summary",
                             URLEncoder.encode(params.getOrDefault("transportMode", "car"), StandardCharsets.UTF_8),
                             URLEncoder.encode(appKey, StandardCharsets.UTF_8),
-                            lat1.floatValue(), lng1.floatValue(),
-                            lat2.floatValue(), lng2.floatValue());
+                            l1.getLat().floatValue(), l1.getLng().floatValue(),
+                            l2.getLat().floatValue(), l2.getLng().floatValue());
 
                     URL u = new URL(url);
                     HttpURLConnection conn = (HttpURLConnection) u.openConnection();
@@ -520,7 +510,7 @@ public class GeoCoder {
                     //
                 }
             }
-            return GeoSP.distance(lat1, lng1, lat2, lng2);
+            return GeoSP.super.getDrivingDistance(l1,l2,params);
         }
     }
 }
