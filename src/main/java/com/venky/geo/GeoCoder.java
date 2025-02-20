@@ -149,10 +149,15 @@ public class GeoCoder {
 
     public static class GeoAddress {
 
+        String address;
         String city;
         String state;
         String country;
-
+        
+        public String getAddress() {
+            return address;
+        }
+        
         public String getCity() {
             return city;
         }
