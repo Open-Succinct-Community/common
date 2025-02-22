@@ -35,7 +35,13 @@ public class IgnoreCaseMap<V> extends TreeMap<String, V> implements Cloneable, M
 	public V put(String key, V value) {
 		return super.put(ucase(key), value);
 	}
-
+	
+	@Override
+	public V putIfAbsent(String key, V value) {
+		return super.putIfAbsent(ucase(key), value);
+	}
+	
+	
 	@Override
 	public V remove(Object key) {
 		return super.remove(ucase(key));
