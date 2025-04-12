@@ -2,6 +2,7 @@ package in.succinct.json;
 
 import com.venky.core.date.DateUtils;
 import com.venky.core.security.Crypt;
+import com.venky.core.string.StringUtil;
 import com.venky.core.util.MultiException;
 import com.venky.core.util.ObjectHolder;
 import com.venky.core.util.ObjectUtil;
@@ -411,10 +412,10 @@ public class JSONAwareWrapper<T extends JSONAware> implements Serializable {
     }
 
     protected String _flat(String s){
-        return _flat(s," ");
+        return _flat(s,"");
     }
     protected String _flat(String s,String prefix){
-        return prefix + (ObjectUtil.isVoid(s) ? " " : s) ;
+        return String.format("%s%s", ObjectUtil.isVoid(s)? "" : prefix , StringUtil.valueOf(s));
     }
     
     
