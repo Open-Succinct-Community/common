@@ -112,12 +112,16 @@ public class DateUtils { // NOPMD by VMahadevan on 1/26/09 11:16 PM
         return dateFormatFactory.get().get(fmt);
     }
     private static Date getHighDate() {
-        try {
-            return getFormat(APP_DATE_TIME_FORMAT_STR).parse("31/12/2999 12:59:59"); // NOPMD by VMahadevan on 1/26/09 11:12 PM
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(Long.MAX_VALUE);
+        c.add(Calendar.DAY_OF_YEAR,-1);
+        c.set(Calendar.HOUR_OF_DAY,23);
+        c.set(Calendar.MINUTE,59);
+        c.set(Calendar.SECOND,59);
+        c.set(Calendar.MILLISECOND,999);
+        return new Date(c.getTimeInMillis());
     }
+    
 
     public static Date getStartOfDay(final Date date) {
         return new Date(getStartOfDay(date.getTime()));

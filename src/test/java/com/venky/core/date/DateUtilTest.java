@@ -23,5 +23,11 @@ public class DateUtilTest {
 		System.out.println(s);
 		LocalDateTime time = LocalDateTime.parse("2021-06-15T13:40:25.040");
 
+	
 	}
+	@Test
+	public void testHighDate(){
+		System.out.println(DateUtils.HIGH_DATE.toString());
+	}
+	
 }

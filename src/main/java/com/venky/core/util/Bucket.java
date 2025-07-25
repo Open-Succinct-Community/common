@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.venky.core.checkpoint.Mergeable;
+import com.venky.core.math.DoubleUtils;
 
 /**
  *
@@ -49,6 +50,10 @@ public class Bucket extends Number implements Cloneable, Serializable, Mergeable
         synchronized (this){
             double old = counter;
         	counter += by;
+            if (DoubleUtils.equals(counter,0.0)){
+                //Account for round off!
+                counter = 0.0;
+            }
         	if (!eventFired) {
         		eventFired = true;
         		try{
