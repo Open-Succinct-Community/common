@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
@@ -13,7 +14,6 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 
 import com.venky.core.util.ObjectUtil;
-
 public class SequenceSet<E> implements Set<E> , Cloneable, List<E>{
 	private ArrayList<E> list ;
 	private HashMap<E,Integer> set ;
@@ -23,6 +23,7 @@ public class SequenceSet<E> implements Set<E> , Cloneable, List<E>{
 		list = new ArrayList<E>();
 	}
 
+	@Override
 	public List<E> reversed(){
 		SequenceSet<E> ret = new SequenceSet<E>();
 		for (int i = list.size() - 1 ; i >= 0 ; i --) {
@@ -229,9 +230,11 @@ public class SequenceSet<E> implements Set<E> , Cloneable, List<E>{
 	}
 	
 	private class Itr implements ListIterator<E> {
+		boolean removed ;
 		int cursor;
 		public Itr(int index){
 			this.cursor = index;
+			this.removed = false;
 		}
 		@Override
 		public boolean hasNext() {
@@ -240,7 +243,16 @@ public class SequenceSet<E> implements Set<E> , Cloneable, List<E>{
 
 		@Override
 		public E next() {
-			return get(++cursor);
+			try {
+				if (removed){
+					removed = false;
+					cursor --;
+				}
+				cursor++;
+				return get(cursor);
+			}catch (IndexOutOfBoundsException ex){
+				throw new NoSuchElementException();
+			}
 		}
 
 		@Override
@@ -250,7 +262,12 @@ public class SequenceSet<E> implements Set<E> , Cloneable, List<E>{
 		@Override
 		public E previous() {
 			try {
-				return get(--cursor);
+				if (removed){
+					removed = false;
+					cursor ++;
+				}
+				cursor --;
+				return get(cursor);
 			}catch (IndexOutOfBoundsException ex){
 				throw new NoSuchElementException();
 			}
@@ -258,7 +275,7 @@ public class SequenceSet<E> implements Set<E> , Cloneable, List<E>{
 
 		@Override
 		public int nextIndex() {
-			return cursor +1 ;
+			return cursor + 1 ;
 		}
 
 		@Override
@@ -268,7 +285,12 @@ public class SequenceSet<E> implements Set<E> , Cloneable, List<E>{
 
 		@Override
 		public void remove() {
-			SequenceSet.this.remove(cursor);
+			if (!removed) {
+				SequenceSet.this.remove(cursor);
+				removed = true;
+			}else {
+				throw new NoSuchElementException();
+			}
 		}
 
 		@Override
@@ -300,3 +322,4 @@ public class SequenceSet<E> implements Set<E> , Cloneable, List<E>{
     }
 
 }
+
