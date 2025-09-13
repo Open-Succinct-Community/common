@@ -1,6 +1,7 @@
 package com.venky.core.collections;
 
 import java.util.Collections;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -29,7 +30,7 @@ public class SortSequenceSet {
 		for (int i = 0 ; i < 10;  i ++) {
 			s.add(i);
 		}
-		SequenceSet<Integer> n = s.reverse();
+		List<Integer> n = s.reversed();
 		for (int i = 0 ; i < 10 ; i ++ ){
 			Assert.assertEquals(9-i,n.get(i).intValue());
 		}
@@ -46,5 +47,18 @@ public class SortSequenceSet {
 			Assert.assertEquals(9-i,n.indexOf(i));
 		}
 		System.out.println(n);
+	}
+	
+	
+	@Test
+	public void testReversal2(){
+		SequenceSet<Integer> sequenceSet = new SequenceSet<>();
+		for (int i = 0 ; i < 10 ; i ++ ) {
+			sequenceSet.add(i);
+		}
+		Collections.reverse(sequenceSet);
+		System.out.println(sequenceSet);
+		
+		
 	}
 }

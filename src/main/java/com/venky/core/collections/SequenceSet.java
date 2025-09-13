@@ -23,7 +23,7 @@ public class SequenceSet<E> implements Set<E> , Cloneable, List<E>{
 		list = new ArrayList<E>();
 	}
 
-	public SequenceSet<E> reverse(){ 
+	public List<E> reversed(){
 		SequenceSet<E> ret = new SequenceSet<E>();
 		for (int i = list.size() - 1 ; i >= 0 ; i --) {
 			ret.add(list.get(i));
@@ -235,14 +235,12 @@ public class SequenceSet<E> implements Set<E> , Cloneable, List<E>{
 		}
 		@Override
 		public boolean hasNext() {
-			return cursor < list.size();
+			return cursor < list.size() -1;
 		}
 
 		@Override
 		public E next() {
-			E v = get(cursor);
-			cursor ++; 
-			return v;
+			return get(++cursor);
 		}
 
 		@Override
@@ -251,11 +249,8 @@ public class SequenceSet<E> implements Set<E> , Cloneable, List<E>{
 		}
 		@Override
 		public E previous() {
-			int i = cursor - 1 ;
 			try {
-				E v = get(i);
-				cursor = i  ;
-				return v;
+				return get(--cursor);
 			}catch (IndexOutOfBoundsException ex){
 				throw new NoSuchElementException();
 			}
@@ -263,7 +258,7 @@ public class SequenceSet<E> implements Set<E> , Cloneable, List<E>{
 
 		@Override
 		public int nextIndex() {
-			return cursor;
+			return cursor +1 ;
 		}
 
 		@Override
@@ -273,13 +268,12 @@ public class SequenceSet<E> implements Set<E> , Cloneable, List<E>{
 
 		@Override
 		public void remove() {
-			cursor--;
 			SequenceSet.this.remove(cursor);
 		}
 
 		@Override
 		public void set(E e) {
-			SequenceSet.this.set(cursor-1,e);
+			SequenceSet.this.set(cursor,e);
 		}
 
 		@Override
@@ -294,7 +288,7 @@ public class SequenceSet<E> implements Set<E> , Cloneable, List<E>{
 	}
 
 	public ListIterator<E> listIterator(int index) {
-		return new Itr(index);
+		return new Itr(index >= size() ? size() : index-1);
 	}
 
 	public List<E> subList(int fromIndex, int toIndex) {
