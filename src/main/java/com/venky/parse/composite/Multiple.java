@@ -25,7 +25,7 @@ public class Multiple extends Rule{
 	}
 	@Override
 	public boolean match(String input, int offset) {
-		boolean ret = (minOccurs == 0 ? true : false); 
+		boolean ret = (minOccurs == 0 ? true : false);
 		
 		String tmpInput = input.substring(offset);
 		
@@ -40,7 +40,8 @@ public class Multiple extends Rule{
 				if (!ret && numMatches >= minOccurs) {
 					ret = true;
 				}
-				if (numMatches >= maxOccurs){
+				if (numMatches > maxOccurs){
+					ret = false;
 					break;
 				}
 			}else {
