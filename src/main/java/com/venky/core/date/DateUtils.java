@@ -83,8 +83,9 @@ public class DateUtils { // NOPMD by VMahadevan on 1/26/09 11:16 PM
     public static final String ISO_DATE_FORMAT_STR = "yyyy-MM-dd";
 
     public static final String ISO_DATE_TIME_FORMAT_STR = "yyyy-MM-dd HH:mm:ss";
-
+    public static final String ISO_DATE_TIME_FORMAT_WITH_TZ_STR = "yyyy-MM-dd HH:mm:ss Z";
     public static final String ISO_DATE_TIME_FORMAT_WITH_MILLIS_STR = "yyyy-MM-dd HH:mm:ss.SSS";
+
     public static final String ISO_8601_24H_FULL_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
 
     
