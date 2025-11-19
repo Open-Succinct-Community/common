@@ -328,7 +328,7 @@ public class JSONAwareWrapper<T extends JSONAware> implements Serializable {
         return parseDateTime(value,TIME_FORMAT);
     }
     public static Date parseDateTime(String value, DateFormat... formats){
-        if (value == null){
+        if (ObjectUtil.isVoid(value)){
             return null;
         }
 
