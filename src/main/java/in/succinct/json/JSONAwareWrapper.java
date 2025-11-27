@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.TimeZone;
 
 public class JSONAwareWrapper<T extends JSONAware> implements Serializable {
@@ -168,7 +169,33 @@ public class JSONAwareWrapper<T extends JSONAware> implements Serializable {
     public <W> W get(String key){
         return (W)((JSONObject)getInner()).get(key) ;
     }
-
+    public <W> W getPathValue(String key){
+        StringTokenizer tokenizer = new StringTokenizer(key,".[]");
+        JSONAwareWrapper<? extends JSONAware> current = this;
+        Object v = tokenizer.hasMoreTokens() ? null : current.getInner();
+        while (tokenizer.hasMoreTokens()){
+            String token = tokenizer.nextToken();
+            Object inner = current.getInner();
+            
+            if (inner instanceof JSONObject object){
+                v = object.get(token);
+            }else if (inner instanceof JSONArray arr){
+                int index = Integer.parseInt(token);
+                v = arr.size() > index ? arr.get(index) : null;
+            }
+            if (v == null){
+                break;
+            }else if (v instanceof JSONAware) {
+                current = new JSONAwareWrapper<>((JSONAware) v);
+            }else if (!tokenizer.hasMoreTokens()){
+                break;
+            }else {
+                throw new RuntimeException("Invalid Path :" +key );
+            }
+        }
+        return (W)v;
+    }
+    
     public <W> W get(String key, W returnIfNull){
         W ret = get(key);
         return ret != null ? ret : returnIfNull;
