@@ -416,7 +416,7 @@ public class JSONAwareWrapper<T extends JSONAware> implements Serializable {
 
     public Integer getInteger(String key,Integer ifNull){
         Object o = get(key);
-        return o == null ? ifNull : Integer.valueOf(String.valueOf(o));
+        return o == null ? ifNull : Integer.valueOf(Double.valueOf(String.valueOf(o)).intValue());
     }
     public Long getLong(String key) {
         return getLong(key,0L);
