@@ -59,7 +59,9 @@ public class JSONAwareWrapper<T extends JSONAware> implements Serializable {
     }
     public static <T extends JSONAware> T parse(Reader payload){
         try {
-            return (T) JSONValue.parseWithException(payload);
+            T t = (T) JSONValue.parseWithException(payload);
+            payload.close();
+            return t;
         }catch (Exception ex){
             throw new RuntimeException(ex);
         }
